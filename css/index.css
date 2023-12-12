@@ -5375,7 +5375,7 @@ body[data-type='about'] #web_bg {
   filter: drop-shadow(0 -500px 0 var(--loadingbar-prospect-color));
   width: 500px;
   height: 62.5px;
-  background: url("https://yuanshen.site/imgs/loading-bar.png") no-repeat left 100%;
+  background: url("https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/loading-bar.png") no-repeat left 100%;
   background-size: 500px 62.5px;
   background-position-x: 0;
 }
@@ -5538,23 +5538,8 @@ body[data-type='about'] #web_bg {
   pointer-events: none;
   z-index: 3;
 }
-#about-page .author-content-item-group.column.mapAndInfo {
-  width: 100%;
-}
-#about-page .author-content-item-group.column {
-  -webkit-box-orient: horizontal;
-  -moz-box-orient: horizontal;
-  -o-box-orient: horizontal;
-  -webkit-flex-direction: row;
-  -ms-flex-direction: row;
-  flex-direction: row;
-}
-#about-page .author-content-item.map {
-  width: 50%;
-}
-#about-page .author-content-item.selfInfo {
-  height: 100%;
-  width: 49%;
+ {
+  body: 1;
 }
 @-moz-keyframes loading-bar {
   0% {
