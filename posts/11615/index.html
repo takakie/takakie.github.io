@@ -1,0 +1,1181 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"><title>Windows认证机制 | 高木のBlog</title><meta name="keywords" content="操作系统,横向移动,认证机制,Windows认证,NTML"><meta name="author" content="Takake"><meta name="copyright" content="Takake"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#f7f9fe"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-touch-fullscreen" content="yes"><meta name="apple-mobile-web-app-title" content="Windows认证机制"><meta name="application-name" content="Windows认证机制"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="#f7f9fe"><meta property="og:type" content="article"><meta property="og:title" content="Windows认证机制"><meta property="og:url" content="https://blog.takake.com/posts/11615/index.html"><meta property="og:site_name" content="高木のBlog"><meta property="og:description" content="Windows认证1.Windows本地认证 Administrator 登陆系统时从sam文件中读取密码哈希和用户输入的密码进行NTML HASH进行比对。  2.我的密码在哪？ 路径**%System%\System32\config\SAM**  3.NTLM (NT LAN Manager)"><meta property="og:locale" content="zh-CN"><meta property="og:image" content="https://blog.takake.com/-%3E%20https:/hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/80cb39dbb6fd526671943aeea318972bd5073688.png?x-oss-process=style/img-to-webp"><meta property="article:author" content="Takake"><meta property="article:tag" content="技术,OpenAI,网络安全,hacker,ChatGPT,人工智能,WEB渗透测试,黑客,分享,服务器,WEB安全,红队,蓝队,"><meta name="twitter:card" content="summary"><meta name="twitter:image" content="https://blog.takake.com/-%3E%20https:/hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/80cb39dbb6fd526671943aeea318972bd5073688.png?x-oss-process=style/img-to-webp"><meta name="description" content="Windows认证1.Windows本地认证 Administrator 登陆系统时从sam文件中读取密码哈希和用户输入的密码进行NTML HASH进行比对。  2.我的密码在哪？ 路径**%System%\System32\config\SAM**  3.NTLM (NT LAN Manager)"><link rel="shortcut icon" href="/favicon.ico"><link rel="canonical" href="https://blog.takake.com/posts/11615/"><link rel="preconnect" href="//cdn.cbd.int"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><meta name="google-site-verification" content="xxx"/><meta name="baidu-site-verification" content="code-xxx"/><meta name="msvalidate.01" content="xxx"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.cbd.int/node-snackbar@0.1.16/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.cbd.int/@fancyapps/ui@5.0.28/dist/fancybox/fancybox.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/cdn/lib/css/swiper.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  linkPageTop: undefined,
+  peoplecanvas: {"enable":true,"img":"https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/ee23df8517f3c3e3efc4145658269c06_5714860933110284659.png"},
+  postHeadAiDescription: {"enable":true,"gptName":"GPT-4.0-turbo","mode":"local","switchBtn":false,"btnLink":"https://afdian.net/item/886a79d4db6711eda42a52540025c377","randomNum":3,"basicWordCount":1000,"key":"xxxx","Referer":"https://xx.xx/"},
+  diytitle: {"enable":true,"leaveTitle":"w(ﾟДﾟ)w 不要走！再看看嘛！","backTitle":"♪(^∇^*)欢迎肥来！"},
+  LA51: {"enable":true,"ck":"3GpafT7n8yHKUbXT","LingQueMonitorID":"3GpatLJgdLFKhspS"},
+  greetingBox: {"enable":true,"default":"晚上好👋","list":[{"greeting":"晚安😴","startTime":0,"endTime":5},{"greeting":"早上好鸭👋, 祝你一天好心情！","startTime":6,"endTime":9},{"greeting":"上午好👋, 状态很好，鼓励一下～","startTime":10,"endTime":10},{"greeting":"11点多啦, 在坚持一下就吃饭啦～","startTime":11,"endTime":11},{"greeting":"午安👋, 宝贝","startTime":12,"endTime":14},{"greeting":"🌈充实的一天辛苦啦！","startTime":14,"endTime":18},{"greeting":"19点喽, 奖励一顿丰盛的大餐吧🍔。","startTime":19,"endTime":19},{"greeting":"晚上好👋, 在属于自己的时间好好放松😌~","startTime":20,"endTime":24}]},
+  twikooEnvId: 'https://takake.netlify.app/.netlify/functions/twikoo',
+  commentBarrageConfig:undefined,
+  root: '/',
+  preloader: {"source":3},
+  friends_vue_info: undefined,
+  navMusic: true,
+  mainTone: {"mode":null,"api":null,"cover_change":true},
+  authorStatus: {"skills":["🤖️ 人工智能爱好者","🔍 分享与热心帮助","🔨 删库跑路一条龙","🤝 网络安全从业者","🏃 脚踏实地行动派","🧱 团队小组发动机"]},
+  algolia: {"appId":"6ECK9ICH9Y","apiKey":"4d7d6edad6ebd6c982ea423b6b573b1c","indexName":"my_hexo","hits":{"per_page":6},"languages":{"input_placeholder":"输入关键词后按下回车查找","hits_empty":"找不到您查询的内容：${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简","rightMenuMsgToTraditionalChinese":"转为繁体","rightMenuMsgToSimplifiedChinese":"转为简体"},
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":330},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    simplehomepage: true,
+    post: false
+  },
+  runtime: '天',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"copy":true,"copyrightEbable":false,"limitCount":50,"languages":{"author":"作者: Takake","link":"链接: ","source":"来源: 高木のBlog","info":"著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。","copySuccess":"复制成功，复制和转载请标注本文地址"}},
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#425AEF","bgDark":"#1f1f1f","position":"top-center"},
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.cbd.int/flickr-justified-gallery@2.1.2/dist/fjGallery.min.js',
+      css: 'https://cdn.cbd.int/flickr-justified-gallery@2.1.2/dist/fjGallery.css'
+    }
+  },
+  isPhotoFigcaption: true,
+  islazyload: true,
+  isAnchor: true,
+  shortcutKey: undefined,
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  configTitle: '高木のBlog',
+  title: 'Windows认证机制',
+  postAI: 'Windows认证含本地（SAM/NTLM哈希）和域（Kerberos）。攻击包括PTH、黄金票据（伪造TGT，需krbtgt哈希）和白银票据（伪造服务票据，需服务哈希）。令牌仿冒利用进程令牌提权。防御：保护哈希、更新krbtgt密码、限制域管登录、启用PAC及日志监控。',
+  pageFillDescription: 'Windows认证, 1.Windows本地认证, 2.我的密码在哪？, 3.NTLM (NT LAN Manager) HASH, 4.NTLM Hash产生流程, 1. 输入预处理：密码转 Unicode 编码, 2. 计算 MD4 散列值, 5.本地认证流程, 6.LM HASH, 1. LM Hash 生成流程, 步骤 1：密码处理, 步骤 2：分割为两组7字节, 步骤 3：生成DES密钥, 步骤 4：加密固定字符串, 步骤 5：拼接结果, 2. 示例, 7.Winodws网络认证, 8-12.NTML 协议, NTLM（NT LAN Manager）, 13.NTMLv2-v1 协议区别, 14.PASS-THE-HASH (哈希传递), 15.哈希传递必要条件, 16.PTH原理, 17.PTH 工具, 18.Active Directory (活动目录)概念, 19.活动目录的功能, 1. 统一身份管理与认证, 2. 资源访问控制, 3. 域环境与逻辑结构, 4. 服务与应用程序集成, 5. 安全与合规, 6. 高可用性与灾难恢复, 7. 扩展与自动化, 20.域认证协议-Kerbroes, Kerberos, 21.域所参与的角色, 22-23.KDC中的角色, 24-27.域认证流程, Kerberos 认证详细流程, 步骤 1：客户端请求 TGT（AS_REQ）, 步骤 2：客户端请求服务票据（TGS_REQ）, 步骤 3：客户端访问服务（AP_REQ）, 28.白银票据, 29.白银票据伪造流程, Mimikatz, 30.白银票据 （Silver Tickets) 默认服务, 31.白银票据 具体流程, 32.白银票据 防御, 33.黄金票据 （Golden Tickets）, 34.黄金票据-MSF kiwi, , 35.黄金票据创建, 36.Ticket总结, 37.Windows Access Token 简介, 访问令牌的类型, (1) 主令牌（Primary Token）, (2) 模拟令牌（Impersonation Token）, 38.访问令牌的组成, 39.SID 安全标志符, 40.Token产生过程, 生成时机：, 41.令牌仿冒实战, 42.Windows Access Token 伪造令牌防御认证本地认证登陆系统时从文件中读取密码哈希和用户输入的密码进行进行比对我的密码在哪路径位数字字母和长度一致本身不存储用户的明文密码产生流程输入预处理密码转编码原始密码用户输入的明文密码例如编码规则将密码转换为格式的字节序列示例密码的编码每个字符占字节含空终止符计算散列值算法选择使用算法已被证明不安全但仍依赖此设计计算过程填充消息将字节流按规范填充至长度满足长度分块处理将填充后的数据分为的块循环运算对每块进行轮位操作包括非线性函数模加循环左移等生成哈希最终输出字节的散列值示例输出的可以看出本质是编码后进行一次本地认证流程是微软早期用于存储用户密码的哈希算法及旧版系统因其严重安全缺陷如弱加密无盐值密码长度限制等已被弃用以下是其生成流程及关键步骤生成流程步骤密码处理转换为大写将用户密码的所有字母转为大写例如填充或截断至字节若密码长度字符用空字符填充至字节若密码长度字符直接截断前字节复制示例密码处理为字节实际长度已足够无需填充步骤分割为两组字节将字节分为两组每组字节复制前字节后字节步骤生成密钥每组字节转换为字节的密钥含奇偶校验位字节字节扩展将字节位按每位一组分割插入奇偶校验位形成字节位例如字节扩展为字节具体算法略步骤加密固定字符串使用两组密钥分别加密固定字符串值复制伪代码示例步骤拼接结果将两次加密结果拼接为字节的字节位十六进制字符串示例以密码为例处理后密码长度填充个字节分割分组字节字节加密结果加密结果假设值加密结果假设值最终网络认证在工作组的网络环境中想要进行网络认证必须得登陆目标主机的用户因此无法建立一个完整的信托机制常见服务协议在早期协议采用明文传输密码后来出现了验证机制但也很容易呗破解后面由提出了挑战响应机制成为现在已经用以及认证了第一步协商向服务器协商是使用还是协议用途旧版协议用于非域环境或旧系统兼容流程客户端发送用户名到服务器服务器返回随机挑战客户端用密码哈希加密挑战并返回响应服务器验证响应缺点易受中继攻击无双向认证协议区别加密密钥都是哈希但加密算法不同一个是一个值长度不同一个是位一个是位哈希传递在内网中抓取管理员的值通过对服务器传递值来完成认证的方式哈希传递必要条件需要用户名和原理工具活动目录概念存储了有关网络对象的信息并且让管理员和用户能够轻松地查找和使用这些信息使用了一种结构化地数据存储方式并以此作为基础对目录信息进行合乎逻辑地分层组织网络对象分为用户用户组计算机域组织单位以及安全策略等活动目录的功能统一身份管理与认证用户组管理集中创建删除修改用户账户和用户组如安全组通讯组支持批量操作如通过或文件导入用户身份认证集成协议作为默认认证方式支持单点登录与轻量目录访问协议兼容用于跨平台身份查询密码策略强制密码复杂度长度字符类型过期时间历史记录防止重复使用账户锁定策略失败登录次数阈值资源访问控制权限管理通过权限和共享权限控制文件文件夹打印机等资源的访问支持细粒度权限分配如读取写入完全控制组策略统一配置用户和计算机的桌面环境安全策略软件部署等例如强制安装防病毒软件禁用存储设置屏幕锁定时间组织单元逻辑分组管理对象如按部门划分便于分层应用组策略域环境与逻辑结构域安全边界共享同一数据库和策略的管理单元每个域有独立的安全策略和用户账户数据库树与林树多个域通过父子信任关系形成的层次结构如和林多个树的集合是中最大的逻辑边界共享全局编录和架构信任关系允许跨域或跨林资源共享如单向信任双向信任外部信任服务与应用程序集成集成依赖解析域控制器和服务定位记录动态更新记录如域控制器的记录证书服务颁发和管理数字证书用于加密通信如智能卡登录联合身份支持跨组织单点登录集成云应用如混合部署同步本地用户到云端的实现混合身份管理安全与合规审计与日志记录用户登录文件访问策略变更等事件通过事件日志支持合规性报告如特权账户保护管理管理员账户如的访问权限防止滥用通过临时提升权限密钥备份将磁盘加密密钥存储在中便于恢复高可用性与灾难恢复域控制器冗余部署多台域控制器通过多主机复制同步数据自动故障转移如通过轮询或站点感知备份与还原使用工具或第三方方案备份数据库支持权威还原恢复误删对象和非权威还原同步数据扩展与自动化架构扩展自定义对象类型和属性如添加员工工号字段需谨慎操作架构变更不可逆管理使用模块自动化任务如批量创建用户导出报表示例命令域认证协议用途域环境中的默认协议更安全高效流程用户登录时客户端向请求使用密码哈希加密的时间戳返回用密钥加密和会话密钥客户端用向请求访问特定服务的票据客户端向服务出示票据服务验证后授权访问优势双向认证票据有效期短支持委派域所参与的角色密钥分发中心包含认证服务和票据授予服务客户端服务端中的角色存储所有客户端白名单只有存在于白名单的客户端才能顺利申请为客户端生成服务为客户端生成某个服务从物理层面看与均为域控制器域认证流程向服务请求希望获取访问的权限得到了这个消息首先得判断是否是可信赖的也就是白名单黑名单的说法这就是服务完成的工作通过在中存储黑名单和白名单来区分成功后返回返回给得到了后继续向请求希望获取访问的权限又得到了这个消息这时候通过消息中的判断出了拥有了这个权限给了访问的权限得到后终于可以成功访问这个只是针对这个其他需要向申请认证详细流程密钥分发中心步骤客户端请求客户端发起请求用户输入用户名客户端向的发送明文请求包含用户名如请求的名称固定为客户端和时间戳防止重放攻击验证用户身份根据用户名查询域数据库获取用户的密码哈希即用户的密钥生成会话密钥生成一个临时密钥用于后续客户端与的通信生成包含客户端用户名客户端时间戳有效期加密用的主密钥账户的密码哈希加密确保只有能解密返回响应加密部分用用户密码哈希加密用的主密钥加密明文部分的有效期等信息步骤客户端请求服务票据客户端解密用户输入密码后客户端生成密码哈希解密客户端缓存和客户端构建向发送请求包含目标服务名如已加密认证器包含客户端用户名时间戳用加密验证请求用的主密钥解密获取用解密认证器验证客户端身份和时间戳防止重放检查是否有效未过期未吊销生成服务票据生成服务会话密钥用于客户端与服务端的通信生成服务票据包含客户端用户名客户端时间戳服务名票据有效期加密服务票据用服务端的密钥服务账户的密码哈希加密确保只有服务端能解密返回响应加密部分用加密服务票据用服务端密钥加密明文部分服务票据的有效期等信息步骤客户端访问服务客户端发送服务票据和认证器向服务端发送请求包含服务票据用服务端密钥加密新的认证器包含用户名时间戳用加密服务端验证请求用自身密钥解密服务票据获取用解密认证器验证时间戳和客户端身份检查票据是否有效服务名匹配未过期服务端响应可选若需双向认证服务端返回一个时间戳用加密客户端验证后确认服务端合法白银票据如果我们知道要访问的目标服务器的就可以就可以跳过的认证流程直接伪造票据来访问目标服务器白银票据伪造流程首先随机自定义一个加密和然后使用目标服务器的加密客户端用户名客户端时间戳服务名票据有效期然后将构造的两个信息发送给目标服务器进行认证白银票据相当于伪造了步骤客户端请求服务票据的步利用服务端进行伪造达到访问的目的白银票据主要用于已获得目标服务器权限但想访问目标服务器的服务且没用域用户时使用列出票据清楚票据白银票据默认服务白银票据只能针对目标服务器也不能通过申请只能针对目标服务器某些服务器去伪造服务注释服务名白银票据具体流程通过将将为找的票据导入到内存中然后直接访问服务就可以跳过认证白银票据防御尽量保证服务器凭证不被窃取通过注册表配置开启特权属性证书保护功能黄金票据黄金票据特点需要与通信需要用户就是之前说的特殊用户原理通过使用用户不断伪造来请求获取访问域内所有服务器服务的目的黄金票据黄金票据创建使用创建环境票据域名域任意用户名总结黄金票据从攻击面来看获取用户的后可以在域中进行持久性的隐藏并且日志无法溯源但是需要拿到权限使用黄金票据能够在一个域环境中长时间控制整个域从防御角度来看需要经常更新的密码才能够使得原有的票据失效最根本的办法是不允许域管账户登录其他服务器白银票据人攻击面来看伪造白银票据的难度比伪造黄金票据的难度较小因为一个域中的服务器如果对外的话非常容易被入侵并且容易被转储从防御角度来看需要开启认证但这会降低认证效率增加的负担最根本的还是要加固服务器本身对外的服务票据特性对比特性黄金票据白银票据攻击目标域内所有服务特定服务如文件服务器依赖条件账户哈希服务账户哈希所需权限域管理员权限本地管理员或服务账户权限检测难度较高需监控生成行为极高绕过仅服务端日志持久性长期有效可设数十年依赖票据有效期通常较短简介种类主令牌模拟令牌不同用户登陆计算机后都会生成一个这个在用户创建进程和线程时使用不断拷贝也就是说一个进程对应一个令牌其他用户访问则没有权限用户运行一个程序都会拷贝一个的在桌面激活的情况下默认都使用的是主令牌只有当用户注销后系统才会将主令牌切换为模拟令牌只有再重启计算机后将令牌清除访问令牌的类型主令牌关联对象用户登录后生成的初始令牌绑定到用户启动的进程如特点代表用户完整的身份和权限用于创建新进程子进程默认继承主令牌模拟令牌关联场景当进程需要临时以其他用户身份执行操作时生成如服务进程处理客户端请求模拟级别无法获取用户身份仅能获取用户身份不能模拟可在本地系统模拟用户可跨机器模拟用户需委派支持生命周期通常短暂操作完成后恢复原始令牌访问令牌的组成每个访问令牌包含以下关键信息用户身份标识用户唯一标识用户账户如所属组用户所属的安全组如权限列表分配给用户的特权如特权状态已启用已禁用或已移除登录会话信息登录类型交互式登录网络登录等登录时间和登录会话其他安全属性所有者默认是用户决定新创建资源的所有者默认若无显式资源将继承此默认访问控制列表完整性级别从低到高如用于强制完整性控制安全标志符具有唯一性表现形式域用户计算机用户列表都会存储在域控的或者计算机本地账户数据库中产生过程生成时机用户登录成功验证后系统生成主令牌进程创建新进程继承父进程的令牌可通过指定不同令牌模拟操作服务或应用程序调用生成模拟令牌令牌仿冒实战使用工具对已经注销的用户查看系统上存在的模拟令牌伪造令牌防御禁止登陆对外且没有做安全加固的服务器清除模拟令牌重启即可',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2025-04-03 01:48:35',
+  postMainColor: '',
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#18171d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#f7f9fe')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          const now = new Date()
+          const hour = now.getHours()
+          const isNight = hour <= 8 || hour >= 22
+          if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+          else if (t === 'light') activateLightMode()
+          else activateDarkMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><meta name="generator" content="Hexo 7.3.0"></head><body data-type="anzhiyu"><div id="web_bg"></div><div id="an_music_bg"></div><div id="loading-box" onclick="document.getElementById(&quot;loading-box&quot;).classList.add(&quot;loaded&quot;)"><div class="loading-bg"><img class="loading-img nolazyload" alt="加载头像" src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/avtor.png?x-oss-process=style/img-to-webp"/><div class="loading-image-dot"></div></div></div><script>const preloader = {
+  endLoading: () => {
+    document.getElementById('loading-box').classList.add("loaded");
+  },
+  initLoading: () => {
+    document.getElementById('loading-box').classList.remove("loaded")
+  }
+}
+window.addEventListener('load',()=> { preloader.endLoading() })
+setTimeout(function(){preloader.endLoading();},10000)
+
+if (true) {
+  document.addEventListener('pjax:send', () => { preloader.initLoading() })
+  document.addEventListener('pjax:complete', () => { preloader.endLoading() })
+}</script><link rel="stylesheet" href="https://cdn.cbd.int/anzhiyu-theme-static@1.1.10/progress_bar/progress_bar.css"/><script async="async" src="https://cdn.cbd.int/pace-js@1.2.4/pace.min.js" data-pace-options="{ &quot;restartOnRequestAfter&quot;:false,&quot;eventLag&quot;:false}"></script><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><div id="nav-group"><span id="blog_name"><a id="site-name" href="/" accesskey="h"><div class="title">高木のBlog</div><i class="anzhiyufont anzhiyu-icon-house-chimney"></i></a><div id="he-plugin-simple"></div><script>var WIDGET = {
+  "CONFIG": {
+    "modules": "0124",
+    "background": "2",
+    "tmpColor": "FFFFFF",
+    "tmpSize": "16",
+    "cityColor": "FFFFFF",
+    "citySize": "16",
+    "aqiColor": "E8D87B",
+    "aqiSize": "16",
+    "weatherIconSize": "24",
+    "alertIconSize": "18",
+    "padding": "10px 10px 10px 10px",
+    "shadow": "0",
+    "language": "auto",
+    "borderRadius": "20",
+    "fixed": "true",
+    "vertical": "top",
+    "horizontal": "left",
+    "left": "10",
+    "top": "7.1",
+    "key": "df245676fb434a0691ead1c63341cd94"
+  }
+}
+</script><link rel="stylesheet" href="https://widget.qweather.net/simple/static/css/he-simple.css?v=1.4.0"/><script src="https://widget.qweather.net/simple/static/js/he-simple.js?v=1.4.0"></script></span><div class="mask-name-container"><div id="name-container"><a id="page-name" href="javascript:anzhiyu.scrollToDest(0, 500)">PAGE_NAME</a></div></div><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span> 文章</span></a><ul class="menus_item_child"><li><a class="site-page child faa-parent animated-hover" href="/archives/"><i class="anzhiyufont anzhiyu-icon-box-archive faa-tada" style="font-size: 0.9em;"></i><span> 隧道</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/categories/"><i class="anzhiyufont anzhiyu-icon-shapes faa-tada" style="font-size: 0.9em;"></i><span> 分类</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/tags/"><i class="anzhiyufont anzhiyu-icon-tags faa-tada" style="font-size: 0.9em;"></i><span> 标签</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span> 友链</span></a><ul class="menus_item_child"><li><a class="site-page child faa-parent animated-hover" href="/link/"><i class="anzhiyufont anzhiyu-icon-link faa-tada" style="font-size: 0.9em;"></i><span> 友人帐</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/comments/"><i class="anzhiyufont anzhiyu-icon-envelope faa-tada" style="font-size: 0.9em;"></i><span> 留言板</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span> 我的</span></a><ul class="menus_item_child"><li><a class="site-page child faa-parent animated-hover" href="/music/"><i class="anzhiyufont anzhiyu-icon-music faa-tada" style="font-size: 0.9em;"></i><span> 音乐馆</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/bangumis/"><i class="anzhiyufont anzhiyu-icon-bilibili faa-tada" style="font-size: 0.9em;"></i><span> 追番页</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span> 关于</span></a><ul class="menus_item_child"><li><a class="site-page child faa-parent animated-hover" href="/about/"><i class="anzhiyufont anzhiyu-icon-paper-plane faa-tada" style="font-size: 0.9em;"></i><span> 关于本人</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/essay/"><i class="anzhiyufont anzhiyu-icon-lightbulb faa-tada" style="font-size: 0.9em;"></i><span> 站点动态</span></a></li><li><a class="site-page child faa-parent animated-hover" href="javascript:toRandomPost()"><i class="anzhiyufont anzhiyu-icon-shoe-prints1 faa-tada" style="font-size: 0.9em;"></i><span> 随便逛逛</span></a></li></ul></div></div></div><div id="nav-right"><div class="nav-button only-home" id="travellings_button" title="随机前往一个开往项目网站"><a class="site-page" onclick="anzhiyu.totraveling()" title="随机前往一个开往项目网站" href="javascript:void(0);" rel="external nofollow" data-pjax-state="external"><i class="anzhiyufont anzhiyu-icon-train"></i></a></div><div class="nav-button" id="randomPost_button"><a class="site-page" onclick="toRandomPost()" title="随机前往一个文章" href="javascript:void(0);"><i class="anzhiyufont anzhiyu-icon-dice"></i></a></div><div class="nav-button" id="search-button"><a class="site-page social-icon search" href="javascript:void(0);" title="搜索🔍" accesskey="s"><i class="anzhiyufont anzhiyu-icon-magnifying-glass"></i><span> 搜索</span></a></div><input id="center-console" type="checkbox"/><label class="widget" for="center-console" title="中控台" onclick="anzhiyu.switchConsole();"><i class="left"></i><i class="widget center"></i><i class="widget right"></i></label><div id="console"><div class="console-card-group-reward"><ul class="reward-all console-card"><li class="reward-item"><a href="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/red_cross.png?x-oss-process=style/img-to-webp" target="_blank"><img class="post-qr-code-img" alt="红十字会" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/red_cross.png?x-oss-process=style/img-to-webp"/></a><div class="post-qr-code-desc">红十字会</div></li><li class="reward-item"><a href="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/logo.png?x-oss-process=style/img-to-webp" target="_blank"><img class="post-qr-code-img" alt="LOGO" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/logo.png?x-oss-process=style/img-to-webp"/></a><div class="post-qr-code-desc">LOGO</div></li></ul></div><div class="console-card-group"><div class="console-card-group-left"><div class="console-card" id="card-newest-comments"><div class="card-content"><div class="author-content-item-tips">互动</div><span class="author-content-item-title"> 最新评论</span></div><div class="aside-list"><span>正在加载中...</span></div></div></div><div class="console-card-group-right"><div class="console-card tags"><div class="card-content"><div class="author-content-item-tips">兴趣点</div><span class="author-content-item-title">寻找你感兴趣的领域</span><div class="card-tags"><div class="item-headline"></div><div class="card-tag-cloud"><a href="/tags/CVE/" style="font-size: 1.05rem;">CVE<sup>4</sup></a><a href="/tags/Chrome/" style="font-size: 1.05rem;">Chrome<sup>2</sup></a><a href="/tags/IPV6/" style="font-size: 1.05rem;">IPV6<sup>1</sup></a><a href="/tags/JAVA/" style="font-size: 1.05rem;">JAVA<sup>2</sup></a><a href="/tags/JAVA%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/" style="font-size: 1.05rem;">JAVA反序列化<sup>4</sup></a><a href="/tags/JAVA%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E/" style="font-size: 1.05rem;">JAVA反序列化漏洞<sup>4</sup></a><a href="/tags/JAVA%E9%AB%98%E7%BA%A7/" style="font-size: 1.05rem;">JAVA高级<sup>1</sup></a><a href="/tags/JS%E9%80%86%E5%90%91/" style="font-size: 1.05rem;">JS逆向<sup>2</sup></a><a href="/tags/NAS/" style="font-size: 1.05rem;">NAS<sup>3</sup></a><a href="/tags/PHP/" style="font-size: 1.05rem;">PHP<sup>1</sup></a><a href="/tags/RCE/" style="font-size: 1.05rem;">RCE<sup>16</sup></a><a href="/tags/TLS/" style="font-size: 1.05rem;">TLS<sup>1</sup></a><a href="/tags/base64/" style="font-size: 1.05rem;">base64<sup>1</sup></a><a href="/tags/cisp/" style="font-size: 1.05rem;">cisp<sup>2</sup></a><a href="/tags/draft/" style="font-size: 1.05rem;">draft<sup>4</sup></a><a href="/tags/esxi/" style="font-size: 1.05rem;">esxi<sup>1</sup></a><a href="/tags/hexo/" style="font-size: 1.05rem;">hexo<sup>1</sup></a><a href="/tags/html/" style="font-size: 1.05rem;">html<sup>1</sup></a><a href="/tags/java/" style="font-size: 1.05rem;">java<sup>1</sup></a><a href="/tags/javascript/" style="font-size: 1.05rem;">javascript<sup>1</sup></a><a href="/tags/nas/" style="font-size: 1.05rem;">nas<sup>1</sup></a><a href="/tags/utf-8/" style="font-size: 1.05rem;">utf-8<sup>1</sup></a><a href="/tags/%E4%B8%AD%E9%97%B4%E4%BB%B6/" style="font-size: 1.05rem;">中间件<sup>13</sup></a><a href="/tags/%E4%BA%91%E5%AD%98%E5%82%A8/" style="font-size: 1.05rem;">云存储<sup>1</sup></a><a href="/tags/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1/" style="font-size: 1.05rem;">代码审计<sup>10</sup></a><a href="/tags/%E5%8D%9A%E5%AE%A2/" style="font-size: 1.05rem;">博客<sup>1</sup></a><a href="/tags/%E5%AE%9E%E9%AA%8C/" style="font-size: 1.05rem;">实验<sup>1</sup></a><a href="/tags/%E5%AF%86%E7%A0%81/" style="font-size: 1.05rem;">密码<sup>8</sup></a><a href="/tags/%E5%BC%80%E5%8F%91/" style="font-size: 1.05rem;">开发<sup>4</sup></a><a href="/tags/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/" style="font-size: 1.05rem;">渗透测试<sup>18</sup></a><a href="/tags/%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/" style="font-size: 1.05rem;">漏洞复现<sup>19</sup></a><a href="/tags/%E7%A1%AC%E7%9B%98/" style="font-size: 1.05rem;">硬盘<sup>1</sup></a><a href="/tags/%E7%A7%81%E6%9C%89%E4%BA%91/" style="font-size: 1.05rem;">私有云<sup>1</sup></a><a href="/tags/%E7%BC%96%E7%A0%81/" style="font-size: 1.05rem;">编码<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E5%8D%8F%E8%AE%AE/" style="font-size: 1.05rem;">网络协议<sup>2</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" style="font-size: 1.05rem;">网络安全<sup>7</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/" style="font-size: 1.05rem;">网络配置<sup>1</sup></a><a href="/tags/%E8%AF%81%E4%B9%A6/" style="font-size: 1.05rem;">证书<sup>1</sup></a><a href="/tags/%E9%99%90%E5%88%B6%E7%BB%95%E8%BF%87/" style="font-size: 1.05rem;">限制绕过<sup>1</sup></a><a href="/tags/%E9%9D%B6%E5%9C%BA/" style="font-size: 1.05rem;">靶场<sup>3</sup></a></div></div><hr/></div></div><div class="console-card history"><div class="item-headline"><i class="anzhiyufont anzhiyu-icon-box-archiv"></i><span>文章</span></div><div class="card-archives"><div class="item-headline"><i class="anzhiyufont anzhiyu-icon-archive"></i><span>归档</span><a class="card-more-btn" href="/archives/" title="查看更多">
+    <i class="anzhiyufont anzhiyu-icon-angle-right"></i></a></div><ul class="card-archive-list"><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2025/03/"><span class="card-archive-list-date">三月 2025</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">6</span><span>篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2025/02/"><span class="card-archive-list-date">二月 2025</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">1</span><span>篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2025/01/"><span class="card-archive-list-date">一月 2025</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">2</span><span>篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/11/"><span class="card-archive-list-date">十一月 2024</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">1</span><span>篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/10/"><span class="card-archive-list-date">十月 2024</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">2</span><span>篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/08/"><span class="card-archive-list-date">八月 2024</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">5</span><span>篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/07/"><span class="card-archive-list-date">七月 2024</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">4</span><span>篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/04/"><span class="card-archive-list-date">四月 2024</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">1</span><span>篇</span></div></a></li></ul></div><hr/></div></div></div><div class="button-group"><div class="console-btn-item"><a class="darkmode_switchbutton" title="显示模式切换" href="javascript:void(0);"><i class="anzhiyufont anzhiyu-icon-moon"></i></a></div><div class="console-btn-item" id="consoleHideAside" onclick="anzhiyu.hideAsideBtn()" title="边栏显示控制"><a class="asideSwitch"><i class="anzhiyufont anzhiyu-icon-arrows-left-right"></i></a></div><div class="console-btn-item" id="consoleMusic" onclick="anzhiyu.musicToggle()" title="音乐开关"><a class="music-switch"><i class="anzhiyufont anzhiyu-icon-music"></i></a></div></div><div class="console-mask" onclick="anzhiyu.hideConsole()" href="javascript:void(0);"></div></div><div class="nav-button" id="nav-totop"><a class="totopbtn" href="javascript:void(0);"><i class="anzhiyufont anzhiyu-icon-arrow-up"></i><span id="percent" onclick="anzhiyu.scrollToDest(0,500)">0</span></a></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);" title="切换"><i class="anzhiyufont anzhiyu-icon-bars"></i></a></div></div></div></nav><div id="post-info"><div id="post-firstinfo"><div class="meta-firstline"><a class="post-meta-original">原创</a><span class="post-meta-categories"><span class="post-meta-separator"></span><i class="anzhiyufont anzhiyu-icon-inbox post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" itemprop="url">网络安全</a></span><span class="article-meta tags"><a class="article-meta__tags" href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" tabindex="-1" itemprop="url"> <span> <i class="anzhiyufont anzhiyu-icon-hashtag"></i>操作系统</span></a><a class="article-meta__tags" href="/tags/%E6%A8%AA%E5%90%91%E7%A7%BB%E5%8A%A8/" tabindex="-1" itemprop="url"> <span> <i class="anzhiyufont anzhiyu-icon-hashtag"></i>横向移动</span></a><a class="article-meta__tags" href="/tags/%E8%AE%A4%E8%AF%81%E6%9C%BA%E5%88%B6/" tabindex="-1" itemprop="url"> <span> <i class="anzhiyufont anzhiyu-icon-hashtag"></i>认证机制</span></a><a class="article-meta__tags" href="/tags/Windows%E8%AE%A4%E8%AF%81/" tabindex="-1" itemprop="url"> <span> <i class="anzhiyufont anzhiyu-icon-hashtag"></i>Windows认证</span></a><a class="article-meta__tags" href="/tags/NTML/" tabindex="-1" itemprop="url"> <span> <i class="anzhiyufont anzhiyu-icon-hashtag"></i>NTML</span></a></span></div></div><h1 class="post-title" itemprop="name headline">Windows认证机制</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="anzhiyufont anzhiyu-icon-calendar-days post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" itemprop="dateCreated datePublished" datetime="2025-03-15T16:00:00.000Z" title="发表于 2025-03-16 00:00:00">2025-03-16</time><span class="post-meta-separator"></span><i class="anzhiyufont anzhiyu-icon-history post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" itemprop="dateCreated datePublished" datetime="2025-04-02T17:48:35.252Z" title="更新于 2025-04-03 01:48:35">2025-04-03</time></span></div><div class="meta-secondline"><span class="post-meta-separator"></span><span class="post-meta-wordcount"><i class="anzhiyufont anzhiyu-icon-file-word post-meta-icon" title="文章字数"></i><span class="post-meta-label" title="文章字数">字数总计:</span><span class="word-count" title="文章字数">5k</span><span class="post-meta-separator"></span><i class="anzhiyufont anzhiyu-icon-clock post-meta-icon" title="阅读时长"></i><span class="post-meta-label" title="阅读时长">阅读时长:</span><span>16分钟</span></span><span class="post-meta-separator"></span><span class="post-meta-pv-cv" id="" data-flag-title="Windows认证机制"><i class="anzhiyufont anzhiyu-icon-fw-eye post-meta-icon"></i><span class="post-meta-label" title="阅读量">阅读量:</span><span id="busuanzi_value_page_pv"><i class="anzhiyufont anzhiyu-icon-spinner anzhiyu-spin"></i></span></span><span class="post-meta-separator">       </span><span class="post-meta-position" title="作者IP属地为长安"><i class="anzhiyufont anzhiyu-icon-location-dot"></i>长安</span></div></div></div><section class="main-hero-waves-area waves-area"><svg class="waves-svg" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto"><defs><path id="gentle-wave" d="M -160 44 c 30 0 58 -18 88 -18 s 58 18 88 18 s 58 -18 88 -18 s 58 18 88 18 v 44 h -352 Z"></path></defs><g class="parallax"><use href="#gentle-wave" x="48" y="0"></use><use href="#gentle-wave" x="48" y="3"></use><use href="#gentle-wave" x="48" y="5"></use><use href="#gentle-wave" x="48" y="7"></use></g></svg></section><div id="post-top-cover"><img class="nolazyload" id="post-top-bg" src="/-%3E%20https:/hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/80cb39dbb6fd526671943aeea318972bd5073688.png?x-oss-process=style/img-to-webp"></div></header><main id="blog-container"><div class="layout" id="content-inner"><div id="post"><div class="post-ai-description"><div class="ai-title"><i class="anzhiyufont anzhiyu-icon-bilibili"></i><div class="ai-title-text">AI-摘要</div><i class="anzhiyufont anzhiyu-icon-arrow-rotate-right"></i><i class="anzhiyufont anzhiyu-icon-circle-dot" title="朗读摘要"></i><div id="ai-tag">GPT-4.0-turbo GPT</div></div><div class="ai-explanation">AI初始化中...</div><div class="ai-btn-box"><div class="ai-btn-item">介绍自己 🙈</div><div class="ai-btn-item">生成本文简介 👋</div><div class="ai-btn-item">推荐相关文章 📖</div><div class="ai-btn-item">前往主页 🏠</div><div class="ai-btn-item" id="go-tianli-blog">前往爱发电购买</div></div><script data-pjax src="/js/anzhiyu/ai_abstract.js"></script></div><article class="post-content" id="article-container" itemscope itemtype="https://blog.takake.com/posts/11615/"><header><a class="post-meta-categories" href="/categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" itemprop="url">网络安全</a><a href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" tabindex="-1" itemprop="url">操作系统</a><a href="/tags/%E6%A8%AA%E5%90%91%E7%A7%BB%E5%8A%A8/" tabindex="-1" itemprop="url">横向移动</a><a href="/tags/%E8%AE%A4%E8%AF%81%E6%9C%BA%E5%88%B6/" tabindex="-1" itemprop="url">认证机制</a><a href="/tags/Windows%E8%AE%A4%E8%AF%81/" tabindex="-1" itemprop="url">Windows认证</a><a href="/tags/NTML/" tabindex="-1" itemprop="url">NTML</a><h1 id="CrawlerTitle" itemprop="name headline">Windows认证机制</h1><span itemprop="author" itemscope itemtype="http://schema.org/Person">Takake</span><time itemprop="dateCreated datePublished" datetime="2025-03-15T16:00:00.000Z" title="发表于 2025-03-16 00:00:00">2025-03-16</time><time itemprop="dateCreated datePublished" datetime="2025-04-02T17:48:35.252Z" title="更新于 2025-04-03 01:48:35">2025-04-03</time></header><h1 id="Windows认证"><a href="#Windows认证" class="headerlink" title="Windows认证"></a>Windows认证</h1><h2 id="1-Windows本地认证"><a href="#1-Windows本地认证" class="headerlink" title="1.Windows本地认证"></a>1.Windows本地认证</h2><ul>
+<li>Administrator</li>
+<li>登陆系统时从sam文件中读取密码哈希和用户输入的密码进行NTML HASH进行比对。</li>
+</ul>
+<h2 id="2-我的密码在哪？"><a href="#2-我的密码在哪？" class="headerlink" title="2.我的密码在哪？"></a>2.我的密码在哪？</h2><ul>
+<li>路径**%System%\System32\config\SAM**</li>
+</ul>
+<h2 id="3-NTLM-NT-LAN-Manager-HASH"><a href="#3-NTLM-NT-LAN-Manager-HASH" class="headerlink" title="3.NTLM (NT LAN Manager) HASH"></a>3.NTLM (NT LAN Manager) HASH</h2><ul>
+<li>32位 数字+字母（和md5长度一致）</li>
+<li>Windows本身不存储用户的明文密码</li>
+</ul>
+<h2 id="4-NTLM-Hash产生流程"><a href="#4-NTLM-Hash产生流程" class="headerlink" title="4.NTLM Hash产生流程"></a>4.NTLM Hash产生流程</h2><h3 id="1-输入预处理：密码转-Unicode-编码"><a href="#1-输入预处理：密码转-Unicode-编码" class="headerlink" title="1. 输入预处理：密码转 Unicode 编码"></a>1. 输入预处理：密码转 Unicode 编码</h3><ul>
+<li><p><strong>原始密码</strong>：用户输入的明文密码（例如 <code>Password123</code>）。</p>
+</li>
+<li><p><strong>编码规则</strong>：将密码转换为 <strong>UTF-16 Little Endian (LE)</strong> 格式的字节序列。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 示例：密码 &quot;Password123&quot; 的 UTF-16LE 编码</span></span><br><span class="line"><span class="built_in">bytes</span> = <span class="string">&quot;P\0a\0s\0s\0w\0o\0r\0d\0123\0&quot;</span>.<span class="built_in">hex</span>()  <span class="comment"># 每个字符占 2 字节（含空终止符）</span></span><br></pre></td></tr></table></figure></li>
+</ul>
+<hr>
+<h3 id="2-计算-MD4-散列值"><a href="#2-计算-MD4-散列值" class="headerlink" title="2. 计算 MD4 散列值"></a><strong>2. 计算 MD4 散列值</strong></h3><ul>
+<li><p><strong>算法选择</strong>：使用 <strong>MD4 算法</strong>（已被证明不安全，但 NTLMv1&#x2F;v2 仍依赖此设计）。</p>
+</li>
+<li><p><strong>计算过程</strong>：</p>
+<ol>
+<li><strong>填充消息</strong>：将 UTF-16LE 字节流按 MD4 规范填充至长度满足 <code>长度 ≡ 448 mod 512</code>。</li>
+<li><strong>分块处理</strong>：将填充后的数据分为 512-bit 的块。</li>
+<li><strong>循环运算</strong>：对每块进行 48 轮位操作（包括非线性函数、模加、循环左移等）。</li>
+<li><strong>生成哈希</strong>：最终输出 <strong>128-bit（16字节）</strong> 的散列值。</li>
+</ol>
+</li>
+<li><p><strong>示例输出</strong>：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># &quot;Password123&quot; 的 NTLM Hash</span></span><br><span class="line">NTLM_Hash = <span class="string">&quot;8846F7EAEE8FB117AD06BDD830B7586C&quot;</span></span><br></pre></td></tr></table></figure></li>
+</ul>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/markdown-img/image-20250316123942242.png?x-oss-process=style/img-to-webp" alt="image-20250316123942242"></p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/markdown-img/image-20250316125137000.png?x-oss-process=style/img-to-webp" alt="image-20250316125137000"></p>
+<ul>
+<li>可以看出本质是编码后进行一次md4。</li>
+</ul>
+<h2 id="5-本地认证流程"><a href="#5-本地认证流程" class="headerlink" title="5.本地认证流程"></a>5.本地认证流程</h2><p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/markdown-img/image-20250316125341348.png?x-oss-process=style/img-to-webp" alt="image-20250316125341348"></p>
+<h2 id="6-LM-HASH"><a href="#6-LM-HASH" class="headerlink" title="6.LM HASH"></a>6.LM HASH</h2><p><strong>LM Hash（LAN Manager Hash）</strong> 是微软早期用于存储用户密码的哈希算法（Windows 95&#x2F;98&#x2F;Me 及旧版 NT 系统），因其严重安全缺陷（如弱加密、无盐值、密码长度限制等）已被弃用。以下是其生成流程及关键步骤：</p>
+<hr>
+<h3 id="1-LM-Hash-生成流程"><a href="#1-LM-Hash-生成流程" class="headerlink" title="1. LM Hash 生成流程"></a><strong>1. LM Hash 生成流程</strong></h3><h4 id="步骤-1：密码处理"><a href="#步骤-1：密码处理" class="headerlink" title="步骤 1：密码处理"></a><strong>步骤 1：密码处理</strong></h4><ol>
+<li><p><strong>转换为大写</strong><br>将用户密码的所有字母转为<strong>大写</strong>（例如 <code>&quot;Password123&quot;</code> → <code>&quot;PASSWORD123&quot;</code>）。</p>
+</li>
+<li><p><strong>填充或截断至14字节</strong></p>
+<ul>
+<li>若密码长度 <strong>&lt;14字符</strong>：用空字符（<code>0x00</code>）填充至14字节。</li>
+<li>若密码长度 <strong>&gt;14字符</strong>：直接截断前14字节。</li>
+</ul>
+<p>python</p>
+<p>复制</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># 示例：密码 &quot;Password123&quot; 处理为 14 字节</span><br><span class="line">processed = &quot;PASSWORD123&quot;.ljust(14, &#x27;\0&#x27;)  # 实际长度已足够，无需填充</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h4 id="步骤-2：分割为两组7字节"><a href="#步骤-2：分割为两组7字节" class="headerlink" title="步骤 2：分割为两组7字节"></a><strong>步骤 2：分割为两组7字节</strong></h4><p>将14字节分为两组（每组7字节）：</p>
+<p>python</p>
+<p>复制</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">part1 = processed[0:7]  # 前7字节</span><br><span class="line">part2 = processed[7:14] # 后7字节</span><br></pre></td></tr></table></figure>
+
+<h4 id="步骤-3：生成DES密钥"><a href="#步骤-3：生成DES密钥" class="headerlink" title="步骤 3：生成DES密钥"></a><strong>步骤 3：生成DES密钥</strong></h4><p>每组7字节转换为8字节的DES密钥（含奇偶校验位）：</p>
+<ol>
+<li><strong>7字节 → 8字节扩展</strong><ul>
+<li>将7字节（56位）按每7位一组分割，插入奇偶校验位形成8字节（64位）。</li>
+<li>例如：7字节 <code>0x123456789ABCDE</code> → 扩展为8字节 <code>0x123456789ABCDEF0</code>（具体算法略）。</li>
+</ul>
+</li>
+</ol>
+<h4 id="步骤-4：加密固定字符串"><a href="#步骤-4：加密固定字符串" class="headerlink" title="步骤 4：加密固定字符串"></a><strong>步骤 4：加密固定字符串</strong></h4><p>使用两组DES密钥分别加密**固定字符串 <code>&quot;KGS!@#$%&quot;</code>**（ASCII值 <code>0x4B47532140232425</code>）：</p>
+<p>python</p>
+<p>复制</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"># 伪代码示例</span><br><span class="line">cipher1 = DES_Encrypt(key=part1_key, plaintext=&quot;KGS!@#$%&quot;)</span><br><span class="line">cipher2 = DES_Encrypt(key=part2_key, plaintext=&quot;KGS!@#$%&quot;)</span><br></pre></td></tr></table></figure>
+
+<h4 id="步骤-5：拼接结果"><a href="#步骤-5：拼接结果" class="headerlink" title="步骤 5：拼接结果"></a><strong>步骤 5：拼接结果</strong></h4><p>将两次加密结果拼接为 <strong>16字节</strong> 的 LM Hash：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">lm_hash = cipher1 + cipher2  <span class="comment"># 16字节 → 32位十六进制字符串</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="2-示例"><a href="#2-示例" class="headerlink" title="2. 示例"></a><strong>2. 示例</strong></h3><p>以密码 <code>&quot;Password123&quot;</code> 为例：</p>
+<ol>
+<li><strong>处理后密码</strong>：<code>&quot;PASSWORD123&quot;</code>（长度11，填充3个 <code>\0</code> → 14字节）。</li>
+<li><strong>分割分组</strong>：<ul>
+<li>Part1: <code>&quot;PASSWOR&quot;</code>（7字节）</li>
+<li>Part2: <code>&quot;D123\0\0\0&quot;</code>（7字节）</li>
+</ul>
+</li>
+<li><strong>DES加密结果</strong>：<ul>
+<li>Part1加密结果：<code>AA39D9B300DE9D05</code>（假设值）</li>
+<li>Part2加密结果：<code>D6E9D4F0B3F4C8A1</code>（假设值）</li>
+</ul>
+</li>
+<li><strong>最终 LM Hash</strong>：<code>AA39D9B300DE9D05D6E9D4F0B3F4C8A1</code>。</li>
+</ol>
+<h2 id="7-Winodws网络认证"><a href="#7-Winodws网络认证" class="headerlink" title="7.Winodws网络认证"></a>7.Winodws网络认证</h2><ol>
+<li>在工作组的网络环境中，想要进行网络认证必须得登陆目标主机的用户，因此无法建立一个完整的信托机制。</li>
+<li>常见服务SMB 445</li>
+</ol>
+<h2 id="8-12-NTML-协议"><a href="#8-12-NTML-协议" class="headerlink" title="8-12.NTML 协议"></a>8-12.NTML 协议</h2><ol>
+<li>在早期SMB协议采用明文传输密码，后来出现了LAN Manager Challenge&#x2F;Response 验证机制，但也很容易呗破解。</li>
+<li>后面由提出了WindowsNT挑战&#x2F;响应机制，成为NTML，现在已经用NTML2以及kerberos认证了。</li>
+</ol>
+<ul>
+<li>第一步协商，向服务器协商是使用NTMLV1还是V2协议，</li>
+</ul>
+<h4 id="NTLM（NT-LAN-Manager）"><a href="#NTLM（NT-LAN-Manager）" class="headerlink" title="NTLM（NT LAN Manager）"></a><strong>NTLM（NT LAN Manager）</strong></h4><ul>
+<li><strong>用途</strong>：旧版协议，用于非域环境或旧系统兼容。</li>
+<li><strong>流程</strong>：<ol>
+<li>客户端发送用户名到服务器。</li>
+<li>服务器返回随机挑战（Challenge 8\16）。</li>
+<li>客户端用密码NTML哈希加密(DES\HMAC-MD5)挑战并返回响应（Response）。</li>
+<li>服务器验证响应。</li>
+</ol>
+</li>
+<li><strong>缺点</strong>：易受中继攻击（Relay Attack），无双向认证。</li>
+</ul>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/markdown-img/image-20250316131613421.png?x-oss-process=style/img-to-webp" alt="image-20250316131613421"></p>
+<h2 id="13-NTMLv2-v1-协议区别"><a href="#13-NTMLv2-v1-协议区别" class="headerlink" title="13.NTMLv2-v1 协议区别"></a>13.NTMLv2-v1 协议区别</h2><ol>
+<li>加密密钥都是NTML哈希，但加密算法不同，一个是V1-DES,一个V2-HMAC-MD5。</li>
+<li>Challenge值长度不同，一个是8位，一个是16位。</li>
+</ol>
+<h2 id="14-PASS-THE-HASH-哈希传递"><a href="#14-PASS-THE-HASH-哈希传递" class="headerlink" title="14.PASS-THE-HASH (哈希传递)"></a>14.PASS-THE-HASH (哈希传递)</h2><ul>
+<li>在内网中抓取管理员的NTML HASH值。</li>
+<li>通过对服务器传递HASH值来完成认证的方式。</li>
+</ul>
+<h2 id="15-哈希传递必要条件"><a href="#15-哈希传递必要条件" class="headerlink" title="15.哈希传递必要条件"></a>15.哈希传递必要条件</h2><ol>
+<li>需要用户名和MTML-Hash</li>
+</ol>
+<h2 id="16-PTH原理"><a href="#16-PTH原理" class="headerlink" title="16.PTH原理"></a>16.PTH原理</h2><p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/markdown-img/image-20250316133132980.png?x-oss-process=style/img-to-webp" alt="image-20250316133132980"></p>
+<h2 id="17-PTH-工具"><a href="#17-PTH-工具" class="headerlink" title="17.PTH 工具"></a>17.PTH 工具</h2><ul>
+<li>Smbmap</li>
+<li>CrackMapExec</li>
+<li>Smbexec</li>
+<li>metasploit</li>
+</ul>
+<h2 id="18-Active-Directory-活动目录-概念"><a href="#18-Active-Directory-活动目录-概念" class="headerlink" title="18.Active Directory (活动目录)概念"></a>18.Active Directory (活动目录)概念</h2><ul>
+<li>Active Directory 存储了有关<strong>网络对象</strong>的信息，并且让管理员和用户能够轻松地查找和使用这些信息。AD使用了一种结构化地数据存储方式，并以此作为基础对目录信息进行合乎<strong>逻辑地分层组织</strong>。</li>
+<li>网络对象分为：用户、用户组、计算机、域、组织单位以及安全策略等。</li>
+</ul>
+<h2 id="19-活动目录的功能"><a href="#19-活动目录的功能" class="headerlink" title="19.活动目录的功能"></a>19.活动目录的功能</h2><h3 id="1-统一身份管理与认证"><a href="#1-统一身份管理与认证" class="headerlink" title="1. 统一身份管理与认证"></a><strong>1. 统一身份管理与认证</strong></h3><ul>
+<li><strong>用户&#x2F;组管理</strong>：<ul>
+<li>集中创建、删除、修改用户账户和用户组（如安全组、通讯组）。</li>
+<li>支持批量操作（如通过 PowerShell 或 CSV 文件导入用户）。</li>
+</ul>
+</li>
+<li><strong>身份认证</strong>：<ul>
+<li>集成 <strong>Kerberos</strong> 协议作为默认认证方式，支持单点登录（SSO）。</li>
+<li>与 <strong>LDAP（轻量目录访问协议）</strong> 兼容，用于跨平台身份查询。</li>
+</ul>
+</li>
+<li><strong>密码策略</strong>：<ul>
+<li>强制密码复杂度（长度、字符类型）、过期时间、历史记录（防止重复使用）。</li>
+<li>账户锁定策略（失败登录次数阈值）。</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="2-资源访问控制"><a href="#2-资源访问控制" class="headerlink" title="2. 资源访问控制"></a><strong>2. 资源访问控制</strong></h3><ul>
+<li><strong>权限管理（ACL）</strong>：<ul>
+<li>通过 <strong>NTFS 权限</strong> 和 <strong>共享权限</strong> 控制文件、文件夹、打印机等资源的访问。</li>
+<li>支持细粒度权限分配（如“读取”、“写入”、“完全控制”）。</li>
+</ul>
+</li>
+<li><strong>组策略（Group Policy）</strong>：<ul>
+<li>统一配置用户和计算机的桌面环境、安全策略、软件部署等。</li>
+<li>例如：强制安装防病毒软件、禁用 USB 存储、设置屏幕锁定时间。</li>
+</ul>
+</li>
+<li><strong>组织单元（OU，Organizational Unit）</strong>：<ul>
+<li>逻辑分组管理对象（如按部门划分 OU），便于分层应用组策略。</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="3-域环境与逻辑结构"><a href="#3-域环境与逻辑结构" class="headerlink" title="3. 域环境与逻辑结构"></a><strong>3. 域环境与逻辑结构</strong></h3><ul>
+<li><strong>域（Domain）</strong>：<ul>
+<li>安全边界，共享同一 AD 数据库和策略的管理单元。</li>
+<li>每个域有独立的安全策略和用户账户数据库。</li>
+</ul>
+</li>
+<li><strong>树（Tree）与林（Forest）</strong>：<ul>
+<li><strong>树</strong>：多个域通过父子信任关系形成的层次结构（如 <code>parent.com</code> 和 <code>child.parent.com</code>）。</li>
+<li><strong>林</strong>：多个树的集合，是 AD 中最大的逻辑边界，共享全局编录（Global Catalog）和架构（Schema）。</li>
+</ul>
+</li>
+<li><strong>信任关系（Trust）</strong>：<ul>
+<li>允许跨域或跨林资源共享（如单向信任、双向信任、外部信任）。</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="4-服务与应用程序集成"><a href="#4-服务与应用程序集成" class="headerlink" title="4. 服务与应用程序集成"></a><strong>4. 服务与应用程序集成</strong></h3><ul>
+<li><strong>DNS 集成</strong>：<ul>
+<li>AD 依赖 DNS 解析域控制器（Domain Controller）和服务定位（SRV 记录）。</li>
+<li>动态更新 DNS 记录（如域控制器的 <code>_ldap._tcp.dc._msdcs</code> 记录）。</li>
+</ul>
+</li>
+<li><strong>证书服务（AD CS）</strong>：<ul>
+<li>颁发和管理数字证书，用于加密通信（如 SSL&#x2F;TLS、智能卡登录）。</li>
+</ul>
+</li>
+<li><strong>联合身份（AD FS）</strong>：<ul>
+<li>支持跨组织单点登录（SSO），集成云应用（如 Office 365、SaaS）。</li>
+</ul>
+</li>
+<li><strong>Azure AD 混合部署</strong>：<ul>
+<li>同步本地 AD 用户到云端的 Azure AD，实现混合身份管理。</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="5-安全与合规"><a href="#5-安全与合规" class="headerlink" title="5. 安全与合规"></a><strong>5. 安全与合规</strong></h3><ul>
+<li><strong>审计与日志</strong>：<ul>
+<li>记录用户登录、文件访问、策略变更等事件（通过 Windows 事件日志）。</li>
+<li>支持合规性报告（如 GDPR、HIPAA）。</li>
+</ul>
+</li>
+<li><strong>特权账户保护</strong>：<ul>
+<li>管理管理员账户（如 Domain Admins）的访问权限，防止滥用。</li>
+<li>通过 <strong>Just-In-Time（JIT）</strong> 临时提升权限。</li>
+</ul>
+</li>
+<li><strong>BitLocker 密钥备份</strong>：<ul>
+<li>将磁盘加密密钥存储在 AD 中，便于恢复。</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="6-高可用性与灾难恢复"><a href="#6-高可用性与灾难恢复" class="headerlink" title="6. 高可用性与灾难恢复"></a><strong>6. 高可用性与灾难恢复</strong></h3><ul>
+<li><strong>域控制器（DC）冗余</strong>：<ul>
+<li>部署多台域控制器，通过多主机复制（Multi-Master Replication）同步数据。</li>
+<li>自动故障转移（如通过 DNS 轮询或站点感知）。</li>
+</ul>
+</li>
+<li><strong>备份与还原</strong>：<ul>
+<li>使用 <code>ntdsutil</code> 工具或第三方方案备份 AD 数据库。</li>
+<li>支持权威还原（恢复误删对象）和非权威还原（同步数据）。</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="7-扩展与自动化"><a href="#7-扩展与自动化" class="headerlink" title="7. 扩展与自动化"></a><strong>7. 扩展与自动化</strong></h3><ul>
+<li><strong>AD 架构（Schema）扩展</strong>：<ul>
+<li>自定义对象类型和属性（如添加员工工号字段）。</li>
+<li>需谨慎操作，架构变更不可逆。</li>
+</ul>
+</li>
+<li><strong>PowerShell 管理</strong>：<ul>
+<li>使用 <code>ActiveDirectory</code> 模块自动化任务（如批量创建用户、导出报表）。</li>
+<li>示例命令：<code>Get-ADUser -Filter * | Export-CSV users.csv</code>。</li>
+</ul>
+</li>
+</ul>
+<h2 id="20-域认证协议-Kerbroes"><a href="#20-域认证协议-Kerbroes" class="headerlink" title="20.域认证协议-Kerbroes"></a>20.域认证协议-Kerbroes</h2><h4 id="Kerberos"><a href="#Kerberos" class="headerlink" title="Kerberos"></a><strong>Kerberos</strong></h4><ul>
+<li><strong>用途</strong>：域环境中的默认协议，更安全高效。</li>
+<li><strong>流程</strong>：<ol>
+<li>用户登录时，客户端向 AS 请求 TGT（使用密码哈希加密的时间戳）。</li>
+<li>AS 返回 TGT（用 KDC 密钥加密）和会话密钥。</li>
+<li>客户端用 TGT 向 TGS 请求访问特定服务的票据（Service Ticket）。</li>
+<li>客户端向服务出示票据，服务验证后授权访问。</li>
+</ol>
+</li>
+<li><strong>优势</strong>：双向认证、票据有效期短、支持委派。</li>
+</ul>
+<h2 id="21-域所参与的角色"><a href="#21-域所参与的角色" class="headerlink" title="21.域所参与的角色"></a>21.域所参与的角色</h2><ul>
+<li><strong>KDC（密钥分发中心）</strong>：包含 AS（认证服务）和 TGS（票据授予服务）。</li>
+<li><strong>Client（客户端）</strong></li>
+<li><strong>Server（服务端）</strong></li>
+</ul>
+<h2 id="22-23-KDC中的角色"><a href="#22-23-KDC中的角色" class="headerlink" title="22-23.KDC中的角色"></a>22-23.KDC中的角色</h2><ul>
+<li>AD (accout database) :存储所有客户端白名单，只有存在于白名单的客户端才能顺利申请TGT</li>
+<li>Authentication Service:为客户端生成TGT服务</li>
+<li>Ticket Granting Service: 为客户端生成某个服务ticket</li>
+</ul>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/markdown-img/image-20250316134946431.png?x-oss-process=style/img-to-webp" alt="image-20250316134946431"></p>
+<p>PS：从物理层面看，AD与KDC均为域控制器DC(Domain Controller)</p>
+<h2 id="24-27-域认证流程"><a href="#24-27-域认证流程" class="headerlink" title="24-27.域认证流程"></a>24-27.域认证流程</h2><ol>
+<li>client向kerberos服务请求，希望获取访问server的权限。<br>kerberos得到了这个消息，首先得判断client是否是可信赖的，也就是白名单黑名单的说法。这就是AS服务完成的工作，通过在AD中存储黑名单和白名单来区分client。成功后，返回AS返回TGT给client。</li>
+<li>client得到了TGT后，继续向kerberos请求，希望获取访问server的权限。kerberos又得到了这个消息，这时候通过client消息中的TGT，判断出了client拥有了这个权限，给了client访问server的权限ticket。</li>
+<li>client得到ticket后，终于可以成功访问server。这个ticket只是针对这个server，其他server需要向TGS申请。</li>
+</ol>
+<h3 id="Kerberos-认证详细流程"><a href="#Kerberos-认证详细流程" class="headerlink" title="Kerberos 认证详细流程"></a><strong>Kerberos 认证详细流程</strong></h3><p>ps: KDS密钥分发中心</p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/markdown-img/image-20250316140119990.png?x-oss-process=style/img-to-webp" alt="image-20250316140119990"></p>
+<h4 id="步骤-1：客户端请求-TGT（AS-REQ）"><a href="#步骤-1：客户端请求-TGT（AS-REQ）" class="headerlink" title="步骤 1：客户端请求 TGT（AS_REQ）"></a><strong>步骤 1：客户端请求 TGT（AS_REQ）</strong></h4><ol>
+<li><p><strong>客户端发起请求</strong>：用户输入用户名，客户端向 KDC 的 AS 发送明文请求，包含：</p>
+<ul>
+<li>用户名（如 <code>user@domain.com</code>）。</li>
+<li>请求的 TGS 名称（固定为 <code>krbtgt/REALM</code>）。</li>
+<li>客户端 IP 和时间戳（防止重放攻击）。</li>
+</ul>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/markdown-img/image-20250316140503362.png?x-oss-process=style/img-to-webp" alt="image-20250316140503362"></p>
+</li>
+<li><p><strong>AS 验证用户身份</strong>：</p>
+<ul>
+<li>AS 根据用户名查询域数据库，获取用户的密码哈希（即用户的密钥）。</li>
+<li><strong>生成会话密钥（Session Key）</strong>：AS 生成一个临时密钥（<code>Client-TGS Session Key</code>），用于后续客户端与 TGS 的通信。</li>
+<li><strong>生成 TGT</strong>：<ul>
+<li>TGT 包含：客户端用户名、客户端 IP、时间戳、TGT 有效期、<code>Client-TGS Session Key</code>。</li>
+<li><strong>加密 TGT</strong>：用 KDC 的主密钥（<code>krbtgt</code> 账户的密码哈希）加密 TGT，确保只有 TGS 能解密。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>AS 返回响应（AS_REP）</strong>：</p>
+<ul>
+<li><strong>加密部分</strong>：<ul>
+<li><code>Client-TGS Session Key</code>（用用户密码哈希加密）。</li>
+<li>TGT（用 KDC 的主密钥加密）。</li>
+</ul>
+</li>
+<li>明文部分：TGT 的有效期等信息。</li>
+</ul>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/markdown-img/image-20250316140723995.png?x-oss-process=style/img-to-webp" alt="image-20250316140723995"></p>
+</li>
+</ol>
+<hr>
+<h4 id="步骤-2：客户端请求服务票据（TGS-REQ）"><a href="#步骤-2：客户端请求服务票据（TGS-REQ）" class="headerlink" title="步骤 2：客户端请求服务票据（TGS_REQ）"></a><strong>步骤 2：客户端请求服务票据（TGS_REQ）</strong></h4><p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/markdown-img/image-20250316141022519.png?x-oss-process=style/img-to-webp" alt="image-20250316141022519"></p>
+<ol>
+<li><p>**客户端解密 <code>Client-TGS Session Key</code>**：</p>
+<ul>
+<li>用户输入密码后，客户端生成密码哈希，解密 <code>Client-TGS Session Key</code>。</li>
+<li>客户端缓存 TGT 和 <code>Client-TGS Session Key</code>。</li>
+</ul>
+</li>
+<li><p><strong>客户端构建 TGS_REQ</strong>：</p>
+<ul>
+<li>向 TGS 发送请求，包含：<ul>
+<li>目标服务名（如 <code>HTTP/server.domain.com</code>）。</li>
+<li>TGT（已加密）。</li>
+<li>认证器（Authenticator）：包含客户端用户名、时间戳，用 <code>Client-TGS Session Key</code> 加密。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>TGS 验证请求</strong>：</p>
+<ul>
+<li>用 KDC 的主密钥解密 TGT，获取 <code>Client-TGS Session Key</code>。</li>
+<li>用 <code>Client-TGS Session Key</code> 解密认证器，验证客户端身份和时间戳（防止重放）。</li>
+<li>检查 TGT 是否有效（未过期、未吊销）。</li>
+</ul>
+</li>
+<li><p><strong>TGS 生成服务票据（Service Ticket）</strong>：</p>
+<ul>
+<li><strong>生成服务会话密钥（Client-Server Session Key）</strong>：用于客户端与服务端的通信。</li>
+<li><strong>生成服务票据</strong>：<ul>
+<li>包含：客户端用户名、客户端 IP、时间戳、服务名、票据有效期、<code>Client-Server Session Key</code>。</li>
+<li><strong>加密服务票据</strong>：用服务端的密钥（服务账户的密码哈希）加密，确保只有服务端能解密。</li>
+</ul>
+</li>
+</ul>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/markdown-img/image-20250316150936188.png?x-oss-process=style/img-to-webp" alt="image-20250316150936188"></p>
+</li>
+<li><p><strong>TGS 返回响应（TGS_REP）</strong>：</p>
+<ul>
+<li><strong>加密部分</strong>：<ul>
+<li><code>Client-Server Session Key</code>（用 <code>Client-TGS Session Key</code> 加密）。</li>
+<li>服务票据（用服务端密钥加密）。</li>
+</ul>
+</li>
+<li>明文部分：服务票据的有效期等信息。</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h4 id="步骤-3：客户端访问服务（AP-REQ）"><a href="#步骤-3：客户端访问服务（AP-REQ）" class="headerlink" title="步骤 3：客户端访问服务（AP_REQ）"></a><strong>步骤 3：客户端访问服务（AP_REQ）</strong></h4><p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/markdown-img/image-20250316141659078.png?x-oss-process=style/img-to-webp" alt="image-20250316141659078"></p>
+<ol>
+<li><strong>客户端发送服务票据和认证器</strong>：<ul>
+<li>向服务端发送请求，包含：<ul>
+<li>服务票据（用服务端密钥加密）。</li>
+<li>新的认证器（包含用户名、时间戳，用 <code>Client-Server Session Key</code> 加密）。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>服务端验证请求</strong>：<ul>
+<li>用自身密钥解密服务票据，获取 <code>Client-Server Session Key</code>。</li>
+<li>用 <code>Client-Server Session Key</code> 解密认证器，验证时间戳和客户端身份。</li>
+<li>检查票据是否有效（服务名匹配、未过期）。</li>
+</ul>
+</li>
+<li><strong>服务端响应（AP_REP，可选）</strong>：<ul>
+<li>若需双向认证，服务端返回一个时间戳（用 <code>Client-Server Session Key</code> 加密），客户端验证后确认服务端合法。</li>
+</ul>
+</li>
+</ol>
+<h2 id="28-白银票据"><a href="#28-白银票据" class="headerlink" title="28.白银票据"></a>28.白银票据</h2><ul>
+<li>如果我们知道要访问的<strong>目标服务器的NTML HASH</strong>就可以就可以跳过KDS的认证流程，直接伪造Ticket票据来访问目标服务器。</li>
+</ul>
+<h2 id="29-白银票据伪造流程"><a href="#29-白银票据伪造流程" class="headerlink" title="29.白银票据伪造流程"></a>29.白银票据伪造流程</h2><ol>
+<li><p>首先随机自定义一个<code>Client-Server Session Key</code>加密<strong>Client info</strong>和 <strong>Timestamp</strong>。</p>
+</li>
+<li><p>然后使用<strong>目标服务器的NTML HASH</strong>加密(客户端用户名、客户端 IP、时间戳、服务名、票据有效期、<code>Client-Server Session Key</code>)。</p>
+</li>
+<li><p>然后将构造的两个信息发送给目标服务器，进行认证。</p>
+</li>
+</ol>
+<ul>
+<li>白银票据相当于伪造了<strong>步骤 2</strong>：客户端请求服务票据（TGS_REQ）的4，5步。利用服务端NTML HASH进行伪造Ticket，达到访问的目的。</li>
+<li>白银票据主要用于已获得目标服务器权限但想访问目标服务器的服务，且没用域用户时使用。</li>
+</ul>
+<h3 id="Mimikatz"><a href="#Mimikatz" class="headerlink" title="Mimikatz"></a>Mimikatz</h3><ul>
+<li>kerberos::list # 列出票据</li>
+<li>kerberos::purge # 清楚票据</li>
+</ul>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">Mimikatz: <span class="title">c</span>:\<span class="title">files</span>&gt;<span class="title">mimikatz.exe</span> &quot;<span class="title">privilege</span>::<span class="title">debug</span>&quot; &quot;<span class="title">sekurlsa</span>::<span class="title">logonpasswords</span>&quot; &quot;<span class="title">exit</span>&quot; &gt; <span class="title">log.txt</span></span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="30-白银票据-（Silver-Tickets-默认服务"><a href="#30-白银票据-（Silver-Tickets-默认服务" class="headerlink" title="30.白银票据 （Silver Tickets) 默认服务"></a>30.白银票据 （Silver Tickets) 默认服务</h2><ul>
+<li>白银票据只能针对目标服务器，也不能通过TGT申请，只能针对目标服务器某些服务器去伪造。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th align="center">服务注释</th>
+<th align="center">服务名</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">WMI</td>
+<td align="center">HOST\RPCSS</td>
+</tr>
+<tr>
+<td align="center">Powershell Remoteing</td>
+<td align="center">HOST\HTTP</td>
+</tr>
+<tr>
+<td align="center">Scheduled Tasks</td>
+<td align="center">HOST</td>
+</tr>
+<tr>
+<td align="center">LDAP\<strong>DCSync</strong></td>
+<td align="center">LDAP</td>
+</tr>
+<tr>
+<td align="center">Windows File Share(CIFS\SMB)</td>
+<td align="center">CIFS</td>
+</tr>
+<tr>
+<td align="center">Windows Remote Server<br />Administration Tools</td>
+<td align="center">RPCSS<br />LDAP\CIFS</td>
+</tr>
+</tbody></table>
+<h2 id="31-白银票据-具体流程"><a href="#31-白银票据-具体流程" class="headerlink" title="31.白银票据 具体流程"></a>31.白银票据 具体流程</h2><ul>
+<li>通过将mimikatz将为找的票据导入到内存中，然后直接访问服务，就可以跳过认证。</li>
+</ul>
+<h2 id="32-白银票据-防御"><a href="#32-白银票据-防御" class="headerlink" title="32.白银票据 防御"></a>32.白银票据 防御</h2><ol>
+<li>尽量保证服务器凭证不被窃取。</li>
+<li>通过注册表配置，开启PAC 特权属性证书保护功能。</li>
+</ol>
+<h2 id="33-黄金票据-（Golden-Tickets）"><a href="#33-黄金票据-（Golden-Tickets）" class="headerlink" title="33.黄金票据 （Golden Tickets）"></a>33.黄金票据 （Golden Tickets）</h2><p><strong>黄金票据特点</strong></p>
+<ol>
+<li>需要与DC通信</li>
+<li>需要krbtgt用户hash（就是之前说的KDC特殊用户hash）</li>
+</ol>
+<p><strong>原理</strong></p>
+<ol>
+<li>通过使用krbtgt用户HASH不断伪造TGT，来请求TGS，获取访问域内所有服务器服务的目的。</li>
+</ol>
+<h2 id="34-黄金票据-MSF-kiwi"><a href="#34-黄金票据-MSF-kiwi" class="headerlink" title="34.黄金票据-MSF kiwi"></a>34.黄金票据-MSF kiwi</h2><p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/markdown-img/image-20250316163013560.png?x-oss-process=style/img-to-webp" alt="image-20250316163013560"></p>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/markdown-img/image-20250316163041505.png?x-oss-process=style/img-to-webp" alt="image-20250316163041505"></p>
+<h2 id=""><a href="#" class="headerlink" title=""></a></h2><h2 id="35-黄金票据创建"><a href="#35-黄金票据创建" class="headerlink" title="35.黄金票据创建"></a>35.黄金票据创建</h2><ul>
+<li>使用mimikatz创建环境票据</li>
+</ul>
+<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mimikatz &quot;kerberis::golden /domain:&lt;域名&gt; /sid:&lt;域SID&gt; /rc4:&lt;KRBTGT NTLM HASH&gt; /user:&lt;任意用户名&gt; /ptt&quot; <span class="keyword">exit</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="36-Ticket总结"><a href="#36-Ticket总结" class="headerlink" title="36.Ticket总结"></a>36.Ticket总结</h2><ul>
+<li><p>黄金票据:从攻击面来看，获取krbtgt用户的hash后，可以在域中进行持久性的隐藏，并且日志无法溯源，但是需要拿到DC权限，使用黄金票据能够在一个域环境中长时间控制整个域。</p>
+</li>
+<li><p>从防御角度来看，需要经常更新krbtgt的密码，才能够使得原有的票据失效。最根本的办法是不允许域管账户登录其他服务器。</p>
+</li>
+<li><p>白银票据:人攻击面来看，伪造白银票据的难度比伪造黄金票据的难度较小，因为一个域中的服务器如果对外的话，非常容易被入侵并且容易被转储Server Hash。</p>
+</li>
+<li><p>从防御角度来看，需要开启PAC认证，但这会降低认证效率，增加DC的负担，最根本的还是要加固<br>服务器本身对外的服务。</p>
+</li>
+<li><p>票据特性对比</p>
+</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th align="left"><strong>特性</strong></th>
+<th align="left"><strong>黄金票据（Golden Ticket）</strong></th>
+<th align="left"><strong>白银票据（Silver Ticket）</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>攻击目标</strong></td>
+<td align="left">域内所有服务</td>
+<td align="left">特定服务（如文件服务器、SQL）</td>
+</tr>
+<tr>
+<td align="left"><strong>依赖条件</strong></td>
+<td align="left">KRBTGT 账户哈希</td>
+<td align="left">服务账户哈希</td>
+</tr>
+<tr>
+<td align="left"><strong>所需权限</strong></td>
+<td align="left">域管理员权限</td>
+<td align="left">本地管理员或服务账户权限</td>
+</tr>
+<tr>
+<td align="left"><strong>检测难度</strong></td>
+<td align="left">较高（需监控 TGT 生成行为）</td>
+<td align="left">极高（绕过 KDC，仅服务端日志）</td>
+</tr>
+<tr>
+<td align="left"><strong>持久性</strong></td>
+<td align="left">长期有效（可设数十年）</td>
+<td align="left">依赖票据有效期（通常较短）</td>
+</tr>
+</tbody></table>
+<h2 id="37-Windows-Access-Token-简介"><a href="#37-Windows-Access-Token-简介" class="headerlink" title="37.Windows Access Token 简介"></a>37.Windows Access Token 简介</h2><ul>
+<li>种类：主令牌、模拟令牌</li>
+<li>不同用户登陆计算机后都会生成一个Access Token，这个Token在用户创建进程和线程时使用，不断拷贝，也就是说一个进程对应一个令牌，其他用户访问则没有权限。</li>
+<li>用户运行一个程序都会拷贝一个explorer.exe的Access Token</li>
+<li>在桌面激活的情况下默认都使用的是主令牌。</li>
+<li>只有当用户注销后，系统才会将主令牌切换为模拟令牌。只有再重启计算机后将令牌清除。</li>
+</ul>
+<h3 id="访问令牌的类型"><a href="#访问令牌的类型" class="headerlink" title="访问令牌的类型"></a>访问令牌的类型</h3><h4 id="1-主令牌（Primary-Token）"><a href="#1-主令牌（Primary-Token）" class="headerlink" title="(1) 主令牌（Primary Token）"></a><strong>(1) 主令牌（Primary Token）</strong></h4><ul>
+<li><strong>关联对象</strong>：用户登录后生成的初始令牌，绑定到用户启动的进程（如 <code>explorer.exe</code>）。</li>
+<li><strong>特点</strong>：<ul>
+<li>代表用户完整的身份和权限。</li>
+<li>用于创建新进程（子进程默认继承主令牌）。</li>
+</ul>
+</li>
+</ul>
+<h4 id="2-模拟令牌（Impersonation-Token）"><a href="#2-模拟令牌（Impersonation-Token）" class="headerlink" title="(2) 模拟令牌（Impersonation Token）"></a><strong>(2) 模拟令牌（Impersonation Token）</strong></h4><ul>
+<li><strong>关联场景</strong>：当进程需要临时以其他用户身份执行操作时生成（如服务进程处理客户端请求）。</li>
+<li><strong>模拟级别</strong>：<ul>
+<li><code>Anonymous</code>：无法获取用户身份。</li>
+<li><code>Identification</code>：仅能获取用户身份，不能模拟。</li>
+<li><code>Impersonation</code>：可在本地系统模拟用户。</li>
+<li><code>Delegation</code>：可跨机器模拟用户（需 Kerberos 委派支持）。</li>
+</ul>
+</li>
+<li><strong>生命周期</strong>：通常短暂，操作完成后恢复原始令牌。</li>
+</ul>
+<h2 id="38-访问令牌的组成"><a href="#38-访问令牌的组成" class="headerlink" title="38.访问令牌的组成"></a>38.访问令牌的组成</h2><p>每个访问令牌包含以下关键信息：</p>
+<ul>
+<li><strong>用户身份标识</strong>：<ul>
+<li>用户 SID（Security Identifier）**：唯一标识用户账户（如 <code>S-1-5-21-...</code>）。</li>
+<li><strong>所属组 SID</strong>：用户所属的安全组（如 <code>Administrators</code>、<code>Domain Users</code>）。</li>
+</ul>
+</li>
+<li><strong>权限列表（Privileges）</strong>：<ul>
+<li>分配给用户的特权（如 <code>SeDebugPrivilege</code>、<code>SeShutdownPrivilege</code>）。</li>
+<li>特权状态：<code>Enabled</code>（已启用）、<code>Disabled</code>（已禁用）或 <code>Removed</code>（已移除）。</li>
+</ul>
+</li>
+<li><strong>登录会话信息</strong>：<ul>
+<li><strong>登录类型</strong>（交互式登录、网络登录等）。</li>
+<li><strong>登录时间</strong>和<strong>登录会话 ID</strong>。</li>
+</ul>
+</li>
+<li><strong>其他安全属性</strong>：<ul>
+<li><strong>所有者（Owner）</strong>：默认是用户 SID，决定新创建资源的所有者。</li>
+<li><strong>默认 DACL（Discretionary Access Control List）</strong>：若无显式 ACL，资源将继承此默认访问控制列表。</li>
+<li><strong>完整性级别（Integrity Level）</strong>：从低到高（如 <code>Untrusted</code>、<code>Medium</code>、<code>High</code>、<code>System</code>），用于强制完整性控制（MIC）</li>
+</ul>
+</li>
+</ul>
+<h2 id="39-SID-安全标志符"><a href="#39-SID-安全标志符" class="headerlink" title="39.SID 安全标志符"></a>39.SID 安全标志符</h2><ul>
+<li>具有唯一性</li>
+<li>SID表现形式：<ul>
+<li>域SID-用户ID</li>
+<li>计算机SID-用户ID</li>
+<li>SID列表都会存储在域控的AD或者计算机本地账户数据库中。</li>
+</ul>
+</li>
+</ul>
+<h2 id="40-Token产生过程"><a href="#40-Token产生过程" class="headerlink" title="40.Token产生过程"></a>40.Token产生过程</h2><h4 id="生成时机："><a href="#生成时机：" class="headerlink" title="生成时机："></a><strong>生成时机</strong>：</h4><ol>
+<li><strong>用户登录</strong>：成功验证后，系统(LSA- Local security Authority)生成主令牌。</li>
+<li><strong>进程创建</strong>：新进程继承父进程的令牌（可通过 <code>CreateProcessAsUser</code> 指定不同令牌）。</li>
+<li><strong>模拟操作</strong>：服务或应用程序调用 <code>ImpersonateLoggedOnUser</code> 生成模拟令牌。</li>
+</ol>
+<h2 id="41-令牌仿冒实战"><a href="#41-令牌仿冒实战" class="headerlink" title="41.令牌仿冒实战"></a>41.令牌仿冒实战</h2><ul>
+<li>使用工具对已经注销的用户查看系统上存在的模拟令牌<ul>
+<li>lncognito</li>
+<li>Powershell - invoke -TokenManipulation.ps1</li>
+<li>Cobalt Strike - steal_token</li>
+</ul>
+</li>
+</ul>
+<p><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/markdown-img/image-20250316170153320.png?x-oss-process=style/img-to-webp" alt="image-20250316170153320"></p>
+<h2 id="42-Windows-Access-Token-伪造令牌防御"><a href="#42-Windows-Access-Token-伪造令牌防御" class="headerlink" title="42.Windows Access Token 伪造令牌防御"></a>42.Windows Access Token 伪造令牌防御</h2><ol>
+<li>禁止Domain Admins 登陆对外且没有做安全加固的服务器。</li>
+<li>清除模拟令牌，重启即可。</li>
+</ol>
+</article><div class="post-copyright"><div class="copyright-cc-box"><i class="anzhiyufont anzhiyu-icon-copyright"></i></div><div class="post-copyright__author_box"><a class="post-copyright__author_img" href="/" title="头像"><img class="post-copyright__author_img_back" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/avtor.png?x-oss-process=style/img-to-webp" title="头像" alt="头像"><img class="post-copyright__author_img_front" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/avtor.png?x-oss-process=style/img-to-webp" title="头像" alt="头像"></a><div class="post-copyright__author_name">Takake</div><div class="post-copyright__author_desc"></div></div><div class="post-copyright__post__info"><a class="post-copyright__original" title="该文章为原创文章，注意版权协议" href="https://blog.takake.com/posts/11615/">原创</a><a class="post-copyright-title"><span onclick="rm.copyPageUrl('https://blog.takake.com/posts/11615/')">Windows认证机制</span></a></div><div class="post-tools" id="post-tools"><div class="post-tools-left"><div class="rewardLeftButton"><div class="post-reward" onclick="anzhiyu.addRewardMask()"><div class="reward-button button--animated" title="赞赏作者"><i class="anzhiyufont anzhiyu-icon-hand-heart-fill"></i>打赏作者</div><div class="reward-main"><div class="reward-all"><span class="reward-title">感谢你赐予我前进的力量</span><ul class="reward-group"><li class="reward-item"><a href="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/red_cross.png?x-oss-process=style/img-to-webp" target="_blank"><img class="post-qr-code-img" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/red_cross.png?x-oss-process=style/img-to-webp" alt="红十字会"/></a><div class="post-qr-code-desc">红十字会</div></li><li class="reward-item"><a href="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/logo.png?x-oss-process=style/img-to-webp" target="_blank"><img class="post-qr-code-img" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/logo.png?x-oss-process=style/img-to-webp" alt="LOGO"/></a><div class="post-qr-code-desc">LOGO</div></li></ul><a class="reward-main-btn" href="/about/#about-reward" target="_blank"><div class="reward-text">赞赏者名单</div><div class="reward-dec">因为你们的支持让我意识到写文章的价值🙏</div></a></div></div></div><div id="quit-box" onclick="anzhiyu.removeRewardMask()" style="display: none"></div></div><div class="shareRight"><div class="share-link mobile"><div class="share-qrcode"><div class="share-button" title="使用手机访问这篇文章"><i class="anzhiyufont anzhiyu-icon-qrcode"></i></div><div class="share-main"><div class="share-main-all"><div id="qrcode" title="https://blog.takake.com/posts/11615/"></div><div class="reward-dec">使用手机访问这篇文章</div></div></div></div></div><div class="share-link weibo"><a class="share-button" target="_blank" href="https://service.weibo.com/share/share.php?title=Windows认证机制&amp;url=https://blog.takake.com/posts/11615/&amp;pic=/-%3E%20https:/hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/80cb39dbb6fd526671943aeea318972bd5073688.png?x-oss-process=style/img-to-webp" rel="external nofollow noreferrer noopener"><i class="anzhiyufont anzhiyu-icon-weibo"></i></a></div><script>function copyCurrentPageUrl() {
+  var currentPageUrl = window.location.href;
+  var input = document.createElement("input");
+  input.setAttribute("value", currentPageUrl);
+  document.body.appendChild(input);
+  input.select();
+  input.setSelectionRange(0, 99999);
+  document.execCommand("copy");
+  document.body.removeChild(input);
+}</script><div class="share-link copyurl"><div class="share-button" id="post-share-url" title="复制链接" onclick="copyCurrentPageUrl()"><i class="anzhiyufont anzhiyu-icon-link"></i></div></div></div></div></div><div class="post-copyright__notice"><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://blog.takake.com" target="_blank">高木のBlog</a>！</span></div></div><div class="post-tools-right"><div class="tag_share"><div class="post-meta__box"><div class="post-meta__box__tag-list"><a class="post-meta__box__tags" href="/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/"><span class="tags-punctuation"> <i class="anzhiyufont anzhiyu-icon-tag"></i></span>操作系统<span class="tagsPageCount">2</span></a><a class="post-meta__box__tags" href="/tags/%E6%A8%AA%E5%90%91%E7%A7%BB%E5%8A%A8/"><span class="tags-punctuation"> <i class="anzhiyufont anzhiyu-icon-tag"></i></span>横向移动<span class="tagsPageCount">1</span></a><a class="post-meta__box__tags" href="/tags/%E8%AE%A4%E8%AF%81%E6%9C%BA%E5%88%B6/"><span class="tags-punctuation"> <i class="anzhiyufont anzhiyu-icon-tag"></i></span>认证机制<span class="tagsPageCount">1</span></a><a class="post-meta__box__tags" href="/tags/Windows%E8%AE%A4%E8%AF%81/"><span class="tags-punctuation"> <i class="anzhiyufont anzhiyu-icon-tag"></i></span>Windows认证<span class="tagsPageCount">1</span></a><a class="post-meta__box__tags" href="/tags/NTML/"><span class="tags-punctuation"> <i class="anzhiyufont anzhiyu-icon-tag"></i></span>NTML<span class="tagsPageCount">1</span></a></div></div></div><div class="post_share"><div class="social-share" data-image="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/170_a_6661_52f20a56.jpg?x-oss-process=style/img-to-webp" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.cbd.int/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"/><script src="https://cdn.cbd.int/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer="defer"></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/posts/37606/"><img class="prev-cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/3477bbcf5d315abda18ef35f71624002.jpeg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">基于某电力系统传输加解密操作BP插件编写</div></div></a></div><div class="next-post pull-right"><a href="/posts/45951/"><img class="next-cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="/img/default_cover.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">DisableFunction绕过</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="anzhiyufont anzhiyu-icon-thumbs-up fa-fw" style="font-size: 1.5rem; margin-right: 4px"></i><span>喜欢这篇文章的人也看了</span></div><div class="relatedPosts-list"><div><a href="/posts/63289/" title="Windows暂停更新十年"><img class="cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/Snipaste_2024-01-01_13-45-45.jpg?x-oss-process=style/img-to-webp" alt="cover"><div class="content is-center"><div class="date"><i class="anzhiyufont anzhiyu-icon-calendar-days fa-fw"></i> 2024-01-01</div><div class="title">Windows暂停更新十年</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="anzhiyufont anzhiyu-icon-comments"></i><span> 评论</span></div><div class="comment-randomInfo"><a onclick="anzhiyu.addRandomCommentInfo()" href="javascript:void(0)">匿名评论</a><a href="/privacy" style="margin-left: 4px">隐私政策</a></div><div class="comment-tips" id="comment-tips"><span>✅ 你无需删除空行，直接评论以获取最佳展示效果</span></div></div><div class="comment-wrap"><div><div id="twikoo-wrap"></div></div></div></div><div class="comment-barrage"></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="card-content"><div class="author-info__sayhi" id="author-info__sayhi" onclick="anzhiyu.changeSayHelloText()"></div><div class="author-info-avatar"><img class="avatar-img" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/avtor.png?x-oss-process=style/img-to-webp" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/><div class="author-status"><img class="g-status" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://emotion.acs.pw/emotion/Heo-100/%E6%BB%91%E7%A8%BD.png" alt="status"/></div></div><div class="author-info__description"><div style="line-height:1.38;margin:0.6rem 0;text-align:justify;color:rgba(255, 255, 255, 0.8);">这有关于<b style="color:#fff">网络安全、开发、人工智能</b>相关的问题和看法，还有<b style="color:#fff">文章翻译</b>和<b style="color:#fff">分享</b>。</div><div style="line-height:1.38;margin:0.6rem 0;text-align:justify;color:rgba(255, 255, 255, 0.8);">相信你可以在这里找到对你有用的<b style="color:#fff">知识</b>和<b style="color:#fff">教程</b>。</div></div><div class="author-info__bottom-group"><a class="author-info__bottom-group-left" href="/"><h1 class="author-info__name">Takake</h1><div class="author-info__desc"></div></a><div class="card-info-social-icons is-center"><a class="social-icon faa-parent animated-hover" href="https://github.com/takakie" target="_blank" title="Github"><i class="anzhiyufont anzhiyu-icon-github"></i></a><a class="social-icon faa-parent animated-hover" href="https://space.bilibili.com/3494356843497618" target="_blank" title="BiliBili"><i class="anzhiyufont anzhiyu-icon-bilibili"></i></a></div></div></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="anzhiyufont anzhiyu-icon-bullhorn anzhiyu-shake"></i><span>公告</span></div><div class="announcement_content">防疫指南：菊花上插葱，新冠去无踪✌️</div></div><div class="card-widget anzhiyu-right-widget" id="card-wechat" onclick="null"><div id="flip-wrapper"><div id="flip-content"><div class="face" style="background: url(https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/63c02edf44033.png) center center / 100% no-repeat"></div><div class="back face" style="background: url(https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/645fa415e869402.png) center center / 100% no-repeat"></div></div></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="anzhiyufont anzhiyu-icon-bars"></i><span>文章目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Windows%E8%AE%A4%E8%AF%81"><span class="toc-number">1.</span> <span class="toc-text">Windows认证</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Windows%E6%9C%AC%E5%9C%B0%E8%AE%A4%E8%AF%81"><span class="toc-number">1.1.</span> <span class="toc-text">1.Windows本地认证</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E6%88%91%E7%9A%84%E5%AF%86%E7%A0%81%E5%9C%A8%E5%93%AA%EF%BC%9F"><span class="toc-number">1.2.</span> <span class="toc-text">2.我的密码在哪？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-NTLM-NT-LAN-Manager-HASH"><span class="toc-number">1.3.</span> <span class="toc-text">3.NTLM (NT LAN Manager) HASH</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-NTLM-Hash%E4%BA%A7%E7%94%9F%E6%B5%81%E7%A8%8B"><span class="toc-number">1.4.</span> <span class="toc-text">4.NTLM Hash产生流程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E8%BE%93%E5%85%A5%E9%A2%84%E5%A4%84%E7%90%86%EF%BC%9A%E5%AF%86%E7%A0%81%E8%BD%AC-Unicode-%E7%BC%96%E7%A0%81"><span class="toc-number">1.4.1.</span> <span class="toc-text">1. 输入预处理：密码转 Unicode 编码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E8%AE%A1%E7%AE%97-MD4-%E6%95%A3%E5%88%97%E5%80%BC"><span class="toc-number">1.4.2.</span> <span class="toc-text">2. 计算 MD4 散列值</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E6%9C%AC%E5%9C%B0%E8%AE%A4%E8%AF%81%E6%B5%81%E7%A8%8B"><span class="toc-number">1.5.</span> <span class="toc-text">5.本地认证流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-LM-HASH"><span class="toc-number">1.6.</span> <span class="toc-text">6.LM HASH</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-LM-Hash-%E7%94%9F%E6%88%90%E6%B5%81%E7%A8%8B"><span class="toc-number">1.6.1.</span> <span class="toc-text">1. LM Hash 生成流程</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%AD%A5%E9%AA%A4-1%EF%BC%9A%E5%AF%86%E7%A0%81%E5%A4%84%E7%90%86"><span class="toc-number">1.6.1.1.</span> <span class="toc-text">步骤 1：密码处理</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%AD%A5%E9%AA%A4-2%EF%BC%9A%E5%88%86%E5%89%B2%E4%B8%BA%E4%B8%A4%E7%BB%847%E5%AD%97%E8%8A%82"><span class="toc-number">1.6.1.2.</span> <span class="toc-text">步骤 2：分割为两组7字节</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%AD%A5%E9%AA%A4-3%EF%BC%9A%E7%94%9F%E6%88%90DES%E5%AF%86%E9%92%A5"><span class="toc-number">1.6.1.3.</span> <span class="toc-text">步骤 3：生成DES密钥</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%AD%A5%E9%AA%A4-4%EF%BC%9A%E5%8A%A0%E5%AF%86%E5%9B%BA%E5%AE%9A%E5%AD%97%E7%AC%A6%E4%B8%B2"><span class="toc-number">1.6.1.4.</span> <span class="toc-text">步骤 4：加密固定字符串</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%AD%A5%E9%AA%A4-5%EF%BC%9A%E6%8B%BC%E6%8E%A5%E7%BB%93%E6%9E%9C"><span class="toc-number">1.6.1.5.</span> <span class="toc-text">步骤 5：拼接结果</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E7%A4%BA%E4%BE%8B"><span class="toc-number">1.6.2.</span> <span class="toc-text">2. 示例</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-Winodws%E7%BD%91%E7%BB%9C%E8%AE%A4%E8%AF%81"><span class="toc-number">1.7.</span> <span class="toc-text">7.Winodws网络认证</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-12-NTML-%E5%8D%8F%E8%AE%AE"><span class="toc-number">1.8.</span> <span class="toc-text">8-12.NTML 协议</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#NTLM%EF%BC%88NT-LAN-Manager%EF%BC%89"><span class="toc-number">1.8.0.1.</span> <span class="toc-text">NTLM（NT LAN Manager）</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#13-NTMLv2-v1-%E5%8D%8F%E8%AE%AE%E5%8C%BA%E5%88%AB"><span class="toc-number">1.9.</span> <span class="toc-text">13.NTMLv2-v1 协议区别</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#14-PASS-THE-HASH-%E5%93%88%E5%B8%8C%E4%BC%A0%E9%80%92"><span class="toc-number">1.10.</span> <span class="toc-text">14.PASS-THE-HASH (哈希传递)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#15-%E5%93%88%E5%B8%8C%E4%BC%A0%E9%80%92%E5%BF%85%E8%A6%81%E6%9D%A1%E4%BB%B6"><span class="toc-number">1.11.</span> <span class="toc-text">15.哈希传递必要条件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#16-PTH%E5%8E%9F%E7%90%86"><span class="toc-number">1.12.</span> <span class="toc-text">16.PTH原理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#17-PTH-%E5%B7%A5%E5%85%B7"><span class="toc-number">1.13.</span> <span class="toc-text">17.PTH 工具</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#18-Active-Directory-%E6%B4%BB%E5%8A%A8%E7%9B%AE%E5%BD%95-%E6%A6%82%E5%BF%B5"><span class="toc-number">1.14.</span> <span class="toc-text">18.Active Directory (活动目录)概念</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#19-%E6%B4%BB%E5%8A%A8%E7%9B%AE%E5%BD%95%E7%9A%84%E5%8A%9F%E8%83%BD"><span class="toc-number">1.15.</span> <span class="toc-text">19.活动目录的功能</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E7%BB%9F%E4%B8%80%E8%BA%AB%E4%BB%BD%E7%AE%A1%E7%90%86%E4%B8%8E%E8%AE%A4%E8%AF%81"><span class="toc-number">1.15.1.</span> <span class="toc-text">1. 统一身份管理与认证</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E8%B5%84%E6%BA%90%E8%AE%BF%E9%97%AE%E6%8E%A7%E5%88%B6"><span class="toc-number">1.15.2.</span> <span class="toc-text">2. 资源访问控制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E5%9F%9F%E7%8E%AF%E5%A2%83%E4%B8%8E%E9%80%BB%E8%BE%91%E7%BB%93%E6%9E%84"><span class="toc-number">1.15.3.</span> <span class="toc-text">3. 域环境与逻辑结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E6%9C%8D%E5%8A%A1%E4%B8%8E%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F%E9%9B%86%E6%88%90"><span class="toc-number">1.15.4.</span> <span class="toc-text">4. 服务与应用程序集成</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-%E5%AE%89%E5%85%A8%E4%B8%8E%E5%90%88%E8%A7%84"><span class="toc-number">1.15.5.</span> <span class="toc-text">5. 安全与合规</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-%E9%AB%98%E5%8F%AF%E7%94%A8%E6%80%A7%E4%B8%8E%E7%81%BE%E9%9A%BE%E6%81%A2%E5%A4%8D"><span class="toc-number">1.15.6.</span> <span class="toc-text">6. 高可用性与灾难恢复</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-%E6%89%A9%E5%B1%95%E4%B8%8E%E8%87%AA%E5%8A%A8%E5%8C%96"><span class="toc-number">1.15.7.</span> <span class="toc-text">7. 扩展与自动化</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#20-%E5%9F%9F%E8%AE%A4%E8%AF%81%E5%8D%8F%E8%AE%AE-Kerbroes"><span class="toc-number">1.16.</span> <span class="toc-text">20.域认证协议-Kerbroes</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Kerberos"><span class="toc-number">1.16.0.1.</span> <span class="toc-text">Kerberos</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#21-%E5%9F%9F%E6%89%80%E5%8F%82%E4%B8%8E%E7%9A%84%E8%A7%92%E8%89%B2"><span class="toc-number">1.17.</span> <span class="toc-text">21.域所参与的角色</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#22-23-KDC%E4%B8%AD%E7%9A%84%E8%A7%92%E8%89%B2"><span class="toc-number">1.18.</span> <span class="toc-text">22-23.KDC中的角色</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#24-27-%E5%9F%9F%E8%AE%A4%E8%AF%81%E6%B5%81%E7%A8%8B"><span class="toc-number">1.19.</span> <span class="toc-text">24-27.域认证流程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Kerberos-%E8%AE%A4%E8%AF%81%E8%AF%A6%E7%BB%86%E6%B5%81%E7%A8%8B"><span class="toc-number">1.19.1.</span> <span class="toc-text">Kerberos 认证详细流程</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%AD%A5%E9%AA%A4-1%EF%BC%9A%E5%AE%A2%E6%88%B7%E7%AB%AF%E8%AF%B7%E6%B1%82-TGT%EF%BC%88AS-REQ%EF%BC%89"><span class="toc-number">1.19.1.1.</span> <span class="toc-text">步骤 1：客户端请求 TGT（AS_REQ）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%AD%A5%E9%AA%A4-2%EF%BC%9A%E5%AE%A2%E6%88%B7%E7%AB%AF%E8%AF%B7%E6%B1%82%E6%9C%8D%E5%8A%A1%E7%A5%A8%E6%8D%AE%EF%BC%88TGS-REQ%EF%BC%89"><span class="toc-number">1.19.1.2.</span> <span class="toc-text">步骤 2：客户端请求服务票据（TGS_REQ）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%AD%A5%E9%AA%A4-3%EF%BC%9A%E5%AE%A2%E6%88%B7%E7%AB%AF%E8%AE%BF%E9%97%AE%E6%9C%8D%E5%8A%A1%EF%BC%88AP-REQ%EF%BC%89"><span class="toc-number">1.19.1.3.</span> <span class="toc-text">步骤 3：客户端访问服务（AP_REQ）</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#28-%E7%99%BD%E9%93%B6%E7%A5%A8%E6%8D%AE"><span class="toc-number">1.20.</span> <span class="toc-text">28.白银票据</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#29-%E7%99%BD%E9%93%B6%E7%A5%A8%E6%8D%AE%E4%BC%AA%E9%80%A0%E6%B5%81%E7%A8%8B"><span class="toc-number">1.21.</span> <span class="toc-text">29.白银票据伪造流程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Mimikatz"><span class="toc-number">1.21.1.</span> <span class="toc-text">Mimikatz</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#30-%E7%99%BD%E9%93%B6%E7%A5%A8%E6%8D%AE-%EF%BC%88Silver-Tickets-%E9%BB%98%E8%AE%A4%E6%9C%8D%E5%8A%A1"><span class="toc-number">1.22.</span> <span class="toc-text">30.白银票据 （Silver Tickets) 默认服务</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#31-%E7%99%BD%E9%93%B6%E7%A5%A8%E6%8D%AE-%E5%85%B7%E4%BD%93%E6%B5%81%E7%A8%8B"><span class="toc-number">1.23.</span> <span class="toc-text">31.白银票据 具体流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#32-%E7%99%BD%E9%93%B6%E7%A5%A8%E6%8D%AE-%E9%98%B2%E5%BE%A1"><span class="toc-number">1.24.</span> <span class="toc-text">32.白银票据 防御</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#33-%E9%BB%84%E9%87%91%E7%A5%A8%E6%8D%AE-%EF%BC%88Golden-Tickets%EF%BC%89"><span class="toc-number">1.25.</span> <span class="toc-text">33.黄金票据 （Golden Tickets）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#34-%E9%BB%84%E9%87%91%E7%A5%A8%E6%8D%AE-MSF-kiwi"><span class="toc-number">1.26.</span> <span class="toc-text">34.黄金票据-MSF kiwi</span></a></li><li class="toc-item toc-level-2"><a class="toc-link"><span class="toc-number">1.27.</span> <span class="toc-text"></span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#35-%E9%BB%84%E9%87%91%E7%A5%A8%E6%8D%AE%E5%88%9B%E5%BB%BA"><span class="toc-number">1.28.</span> <span class="toc-text">35.黄金票据创建</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#36-Ticket%E6%80%BB%E7%BB%93"><span class="toc-number">1.29.</span> <span class="toc-text">36.Ticket总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#37-Windows-Access-Token-%E7%AE%80%E4%BB%8B"><span class="toc-number">1.30.</span> <span class="toc-text">37.Windows Access Token 简介</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%BF%E9%97%AE%E4%BB%A4%E7%89%8C%E7%9A%84%E7%B1%BB%E5%9E%8B"><span class="toc-number">1.30.1.</span> <span class="toc-text">访问令牌的类型</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E4%B8%BB%E4%BB%A4%E7%89%8C%EF%BC%88Primary-Token%EF%BC%89"><span class="toc-number">1.30.1.1.</span> <span class="toc-text">(1) 主令牌（Primary Token）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-%E6%A8%A1%E6%8B%9F%E4%BB%A4%E7%89%8C%EF%BC%88Impersonation-Token%EF%BC%89"><span class="toc-number">1.30.1.2.</span> <span class="toc-text">(2) 模拟令牌（Impersonation Token）</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#38-%E8%AE%BF%E9%97%AE%E4%BB%A4%E7%89%8C%E7%9A%84%E7%BB%84%E6%88%90"><span class="toc-number">1.31.</span> <span class="toc-text">38.访问令牌的组成</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#39-SID-%E5%AE%89%E5%85%A8%E6%A0%87%E5%BF%97%E7%AC%A6"><span class="toc-number">1.32.</span> <span class="toc-text">39.SID 安全标志符</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#40-Token%E4%BA%A7%E7%94%9F%E8%BF%87%E7%A8%8B"><span class="toc-number">1.33.</span> <span class="toc-text">40.Token产生过程</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%94%9F%E6%88%90%E6%97%B6%E6%9C%BA%EF%BC%9A"><span class="toc-number">1.33.0.1.</span> <span class="toc-text">生成时机：</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#41-%E4%BB%A4%E7%89%8C%E4%BB%BF%E5%86%92%E5%AE%9E%E6%88%98"><span class="toc-number">1.34.</span> <span class="toc-text">41.令牌仿冒实战</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#42-Windows-Access-Token-%E4%BC%AA%E9%80%A0%E4%BB%A4%E7%89%8C%E9%98%B2%E5%BE%A1"><span class="toc-number">1.35.</span> <span class="toc-text">42.Windows Access Token 伪造令牌防御</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="anzhiyufont anzhiyu-icon-history"></i><span>最近发布</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/56203/" title="WX小程序渗透"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/170_a_6661_52f20a56.jpg?x-oss-process=style/img-to-webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="WX小程序渗透"/></a><div class="content"><a class="title" href="/posts/56203/" title="WX小程序渗透">WX小程序渗透</a><time datetime="2025-03-28T16:00:00.000Z" title="发表于 2025-03-29 00:00:00">2025-03-29</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/18454/" title="Nginx常见安全漏洞"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/nginx01.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Nginx常见安全漏洞"/></a><div class="content"><a class="title" href="/posts/18454/" title="Nginx常见安全漏洞">Nginx常见安全漏洞</a><time datetime="2025-03-26T16:00:00.000Z" title="发表于 2025-03-27 00:00:00">2025-03-27</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/20917/" title="HTTPS加密流程以及抓包原理解析"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/http_tohttps.png?x-oss-process=style/img-to-webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="HTTPS加密流程以及抓包原理解析"/></a><div class="content"><a class="title" href="/posts/20917/" title="HTTPS加密流程以及抓包原理解析">HTTPS加密流程以及抓包原理解析</a><time datetime="2025-03-25T16:00:00.000Z" title="发表于 2025-03-26 00:00:00">2025-03-26</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/8203/" title="Tomcat常见安全漏洞"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/apache_tomcat_logo_icon_167851.png?x-oss-process=style/img-to-webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Tomcat常见安全漏洞"/></a><div class="content"><a class="title" href="/posts/8203/" title="Tomcat常见安全漏洞">Tomcat常见安全漏洞</a><time datetime="2025-03-24T16:00:00.000Z" title="发表于 2025-03-25 00:00:00">2025-03-25</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/45951/" title="DisableFunction绕过"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="/img/default_cover.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="DisableFunction绕过"/></a><div class="content"><a class="title" href="/posts/45951/" title="DisableFunction绕过">DisableFunction绕过</a><time datetime="2025-03-23T16:00:00.000Z" title="发表于 2025-03-24 00:00:00">2025-03-24</time></div></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div id="workboard"><img class="workSituationImg boardsign" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/184064234.png" alt="网络安全行业初级从业者！~" title="网络安全行业初级从业者！~"/><div id="runtimeTextTip"></div></div></div><div id="footer-bar"><div class="footer-bar-links"><div class="footer-bar-left"><div id="footer-bar-tips"><div class="copyright">&copy;2022 - 2025 By <a class="footer-bar-link" href="/" title="Takake" target="_blank">Takake</a></div></div><div id="footer-type-tips"></div></div><div class="footer-bar-right"><a class="footer-bar-link" target="_blank" rel="noopener" href="https://github.com" title="GITHUB">GITHUB</a><a class="footer-bar-link" target="_blank" rel="noopener" href="https://chat.opengpt.lol" title="CHATGPT">CHATGPT</a></div></div></div></footer></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="sidebar-site-data site-data is-center"><a href="/archives/" title="archive"><div class="headline">文章</div><div class="length-num">72</div></a><a href="/tags/" title="tag"><div class="headline">标签</div><div class="length-num">133</div></a><a href="/categories/" title="category"><div class="headline">分类</div><div class="length-num">12</div></a></div><span class="sidebar-menu-item-title">功能</span><div class="sidebar-menu-item"><a class="darkmode_switchbutton menu-child" href="javascript:void(0);" title="显示模式"><i class="anzhiyufont anzhiyu-icon-circle-half-stroke"></i><span>显示模式</span></a></div><div class="back-menu-list-groups"><div class="back-menu-list-group"><div class="back-menu-list-title">网页</div><div class="back-menu-list"><a class="back-menu-item" href="https://blog.takake.com/" title="博客"><img class="back-menu-item-icon" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="/img/favicon.ico" alt="博客"/><span class="back-menu-item-text">博客</span></a></div></div><div class="back-menu-list-group"><div class="back-menu-list-title">项目</div><div class="back-menu-list"><a class="back-menu-item" target="_blank" rel="noopener" href="https:/api.opengpt.lol/" title="GPT-API"><img class="back-menu-item-icon" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;/img/404.jpg&quot;" data-lazy-src="/img/favicon.ico" alt="GPT-API"/><span class="back-menu-item-text">GPT-API</span></a></div></div></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span> 文章</span></a><ul class="menus_item_child"><li><a class="site-page child faa-parent animated-hover" href="/archives/"><i class="anzhiyufont anzhiyu-icon-box-archive faa-tada" style="font-size: 0.9em;"></i><span> 隧道</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/categories/"><i class="anzhiyufont anzhiyu-icon-shapes faa-tada" style="font-size: 0.9em;"></i><span> 分类</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/tags/"><i class="anzhiyufont anzhiyu-icon-tags faa-tada" style="font-size: 0.9em;"></i><span> 标签</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span> 友链</span></a><ul class="menus_item_child"><li><a class="site-page child faa-parent animated-hover" href="/link/"><i class="anzhiyufont anzhiyu-icon-link faa-tada" style="font-size: 0.9em;"></i><span> 友人帐</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/comments/"><i class="anzhiyufont anzhiyu-icon-envelope faa-tada" style="font-size: 0.9em;"></i><span> 留言板</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span> 我的</span></a><ul class="menus_item_child"><li><a class="site-page child faa-parent animated-hover" href="/music/"><i class="anzhiyufont anzhiyu-icon-music faa-tada" style="font-size: 0.9em;"></i><span> 音乐馆</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/bangumis/"><i class="anzhiyufont anzhiyu-icon-bilibili faa-tada" style="font-size: 0.9em;"></i><span> 追番页</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span> 关于</span></a><ul class="menus_item_child"><li><a class="site-page child faa-parent animated-hover" href="/about/"><i class="anzhiyufont anzhiyu-icon-paper-plane faa-tada" style="font-size: 0.9em;"></i><span> 关于本人</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/essay/"><i class="anzhiyufont anzhiyu-icon-lightbulb faa-tada" style="font-size: 0.9em;"></i><span> 站点动态</span></a></li><li><a class="site-page child faa-parent animated-hover" href="javascript:toRandomPost()"><i class="anzhiyufont anzhiyu-icon-shoe-prints1 faa-tada" style="font-size: 0.9em;"></i><span> 随便逛逛</span></a></li></ul></div></div><span class="sidebar-menu-item-title">标签</span><div class="card-tags"><div class="item-headline"></div><div class="card-tag-cloud"><a href="/tags/CVE/" style="font-size: 0.88rem;">CVE<sup>4</sup></a><a href="/tags/Chrome/" style="font-size: 0.88rem;">Chrome<sup>2</sup></a><a href="/tags/IPV6/" style="font-size: 0.88rem;">IPV6<sup>1</sup></a><a href="/tags/JAVA/" style="font-size: 0.88rem;">JAVA<sup>2</sup></a><a href="/tags/JAVA%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/" style="font-size: 0.88rem;">JAVA反序列化<sup>4</sup></a><a href="/tags/JAVA%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E/" style="font-size: 0.88rem;">JAVA反序列化漏洞<sup>4</sup></a><a href="/tags/JAVA%E9%AB%98%E7%BA%A7/" style="font-size: 0.88rem;">JAVA高级<sup>1</sup></a><a href="/tags/JS%E9%80%86%E5%90%91/" style="font-size: 0.88rem;">JS逆向<sup>2</sup></a><a href="/tags/NAS/" style="font-size: 0.88rem;">NAS<sup>3</sup></a><a href="/tags/PHP/" style="font-size: 0.88rem;">PHP<sup>1</sup></a><a href="/tags/RCE/" style="font-size: 0.88rem;">RCE<sup>16</sup></a><a href="/tags/TLS/" style="font-size: 0.88rem;">TLS<sup>1</sup></a><a href="/tags/base64/" style="font-size: 0.88rem;">base64<sup>1</sup></a><a href="/tags/cisp/" style="font-size: 0.88rem;">cisp<sup>2</sup></a><a href="/tags/draft/" style="font-size: 0.88rem;">draft<sup>4</sup></a><a href="/tags/esxi/" style="font-size: 0.88rem;">esxi<sup>1</sup></a><a href="/tags/hexo/" style="font-size: 0.88rem;">hexo<sup>1</sup></a><a href="/tags/html/" style="font-size: 0.88rem;">html<sup>1</sup></a><a href="/tags/java/" style="font-size: 0.88rem;">java<sup>1</sup></a><a href="/tags/javascript/" style="font-size: 0.88rem;">javascript<sup>1</sup></a><a href="/tags/nas/" style="font-size: 0.88rem;">nas<sup>1</sup></a><a href="/tags/utf-8/" style="font-size: 0.88rem;">utf-8<sup>1</sup></a><a href="/tags/%E4%B8%AD%E9%97%B4%E4%BB%B6/" style="font-size: 0.88rem;">中间件<sup>13</sup></a><a href="/tags/%E4%BA%91%E5%AD%98%E5%82%A8/" style="font-size: 0.88rem;">云存储<sup>1</sup></a><a href="/tags/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1/" style="font-size: 0.88rem;">代码审计<sup>10</sup></a><a href="/tags/%E5%8D%9A%E5%AE%A2/" style="font-size: 0.88rem;">博客<sup>1</sup></a><a href="/tags/%E5%AE%9E%E9%AA%8C/" style="font-size: 0.88rem;">实验<sup>1</sup></a><a href="/tags/%E5%AF%86%E7%A0%81/" style="font-size: 0.88rem;">密码<sup>8</sup></a><a href="/tags/%E5%BC%80%E5%8F%91/" style="font-size: 0.88rem;">开发<sup>4</sup></a><a href="/tags/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/" style="font-size: 0.88rem;">渗透测试<sup>18</sup></a><a href="/tags/%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/" style="font-size: 0.88rem;">漏洞复现<sup>19</sup></a><a href="/tags/%E7%A1%AC%E7%9B%98/" style="font-size: 0.88rem;">硬盘<sup>1</sup></a><a href="/tags/%E7%A7%81%E6%9C%89%E4%BA%91/" style="font-size: 0.88rem;">私有云<sup>1</sup></a><a href="/tags/%E7%BC%96%E7%A0%81/" style="font-size: 0.88rem;">编码<sup>1</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E5%8D%8F%E8%AE%AE/" style="font-size: 0.88rem;">网络协议<sup>2</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" style="font-size: 0.88rem;">网络安全<sup>7</sup></a><a href="/tags/%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/" style="font-size: 0.88rem;">网络配置<sup>1</sup></a><a href="/tags/%E8%AF%81%E4%B9%A6/" style="font-size: 0.88rem;">证书<sup>1</sup></a><a href="/tags/%E9%99%90%E5%88%B6%E7%BB%95%E8%BF%87/" style="font-size: 0.88rem;">限制绕过<sup>1</sup></a><a href="/tags/%E9%9D%B6%E5%9C%BA/" style="font-size: 0.88rem;">靶场<sup>3</sup></a></div></div><hr/></div></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="anzhiyufont anzhiyu-icon-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="anzhiyufont anzhiyu-icon-circle-half-stroke"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="anzhiyufont anzhiyu-icon-arrows-left-right"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="anzhiyufont anzhiyu-icon-gear"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="anzhiyufont anzhiyu-icon-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="anzhiyufont anzhiyu-icon-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="anzhiyufont anzhiyu-icon-arrow-up"></i></button></div></div><div id="nav-music"><a id="nav-music-hoverTips" onclick="anzhiyu.musicToggle()" accesskey="m">播放音乐</a><div id="console-music-bg"></div><meting-js id="8923547078" server="netease" type="playlist" mutex="true" preload="none" theme="var(--anzhiyu-main)" data-lrctype="0" order="random" volume="0.7"></meting-js></div><div id="algolia-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><button class="search-close-button"><i class="anzhiyufont anzhiyu-icon-xmark"></i></button></nav><div class="search-wrap"><div id="algolia-search-input"></div><hr/><div id="algolia-search-results"><div id="algolia-hits"></div><div id="algolia-pagination"></div><div id="algolia-info"><div class="algolia-stats"></div><div class="algolia-poweredBy"></div></div></div></div></div><div id="search-mask"></div></div><div id="rightMenu"><div class="rightMenu-group rightMenu-small"><div class="rightMenu-item" id="menu-backward"><i class="anzhiyufont anzhiyu-icon-arrow-left"></i></div><div class="rightMenu-item" id="menu-forward"><i class="anzhiyufont anzhiyu-icon-arrow-right"></i></div><div class="rightMenu-item" id="menu-refresh"><i class="anzhiyufont anzhiyu-icon-arrow-rotate-right" style="font-size: 1rem;"></i></div><div class="rightMenu-item" id="menu-top"><i class="anzhiyufont anzhiyu-icon-arrow-up"></i></div></div><div class="rightMenu-group rightMenu-line rightMenuPlugin"><div class="rightMenu-item" id="menu-copytext"><i class="anzhiyufont anzhiyu-icon-copy"></i><span>复制选中文本</span></div><div class="rightMenu-item" id="menu-pastetext"><i class="anzhiyufont anzhiyu-icon-paste"></i><span>粘贴文本</span></div><a class="rightMenu-item" id="menu-commenttext"><i class="anzhiyufont anzhiyu-icon-comment-medical"></i><span>引用到评论</span></a><div class="rightMenu-item" id="menu-newwindow"><i class="anzhiyufont anzhiyu-icon-window-restore"></i><span>新窗口打开</span></div><div class="rightMenu-item" id="menu-copylink"><i class="anzhiyufont anzhiyu-icon-link"></i><span>复制链接地址</span></div><div class="rightMenu-item" id="menu-copyimg"><i class="anzhiyufont anzhiyu-icon-images"></i><span>复制此图片</span></div><div class="rightMenu-item" id="menu-downloadimg"><i class="anzhiyufont anzhiyu-icon-download"></i><span>下载此图片</span></div><div class="rightMenu-item" id="menu-newwindowimg"><i class="anzhiyufont anzhiyu-icon-window-restore"></i><span>新窗口打开图片</span></div><div class="rightMenu-item" id="menu-search"><i class="anzhiyufont anzhiyu-icon-magnifying-glass"></i><span>站内搜索</span></div><div class="rightMenu-item" id="menu-searchBaidu"><i class="anzhiyufont anzhiyu-icon-magnifying-glass"></i><span>百度搜索</span></div><div class="rightMenu-item" id="menu-music-toggle"><i class="anzhiyufont anzhiyu-icon-play"></i><span>播放音乐</span></div><div class="rightMenu-item" id="menu-music-back"><i class="anzhiyufont anzhiyu-icon-backward"></i><span>切换到上一首</span></div><div class="rightMenu-item" id="menu-music-forward"><i class="anzhiyufont anzhiyu-icon-forward"></i><span>切换到下一首</span></div><div class="rightMenu-item" id="menu-music-playlist" onclick="window.open(&quot;https://music.163.com/#/playlist?id=8923547078&quot;, &quot;_blank&quot;);" style="display: none;"><i class="anzhiyufont anzhiyu-icon-radio"></i><span>查看所有歌曲</span></div><div class="rightMenu-item" id="menu-music-copyMusicName"><i class="anzhiyufont anzhiyu-icon-copy"></i><span>复制歌名</span></div></div><div class="rightMenu-group rightMenu-line rightMenuOther"><a class="rightMenu-item menu-link" id="menu-randomPost"><i class="anzhiyufont anzhiyu-icon-shuffle"></i><span>随便逛逛</span></a><a class="rightMenu-item menu-link" href="/categories/"><i class="anzhiyufont anzhiyu-icon-cube"></i><span>博客分类</span></a><a class="rightMenu-item menu-link" href="/tags/"><i class="anzhiyufont anzhiyu-icon-tags"></i><span>文章标签</span></a></div><div class="rightMenu-group rightMenu-line rightMenuOther"><a class="rightMenu-item" id="menu-copy" href="javascript:void(0);"><i class="anzhiyufont anzhiyu-icon-copy"></i><span>复制地址</span></a><a class="rightMenu-item" id="menu-commentBarrage" href="javascript:void(0);"><i class="anzhiyufont anzhiyu-icon-message"></i><span class="menu-commentBarrage-text">关闭热评</span></a><a class="rightMenu-item" id="menu-darkmode" href="javascript:void(0);"><i class="anzhiyufont anzhiyu-icon-circle-half-stroke"></i><span class="menu-darkmode-text">深色模式</span></a><a class="rightMenu-item" id="menu-translate" href="javascript:void(0);"><i class="anzhiyufont anzhiyu-icon-language"></i><span>轉為繁體</span></a></div></div><div id="rightmenu-mask"></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.cbd.int/@fancyapps/ui@5.0.28/dist/fancybox/fancybox.umd.js"></script><script src="https://cdn.cbd.int/instant.page@5.2.0/instantpage.js" type="module"></script><script src="https://cdn.cbd.int/vanilla-lazyload@17.8.5/dist/lazyload.iife.min.js"></script><script src="https://cdn.cbd.int/node-snackbar@0.1.16/dist/snackbar.min.js"></script><canvas id="universe"></canvas><script async src="https://hongkong-img.oss-cn-hongkong.aliyuncs.com/cdn/lib/js/dark.js"></script><script>// 消除控制台打印
+var HoldLog = console.log;
+console.log = function () {};
+let now1 = new Date();
+queueMicrotask(() => {
+  const Log = function () {
+    HoldLog.apply(console, arguments);
+  }; //在恢复前输出日志
+  const grt = new Date("12/01/2023 00:00:00"); //此处修改你的建站时间或者网站上线时间
+  now1.setTime(now1.getTime() + 250);
+  const days = (now1 - grt) / 1000 / 60 / 60 / 24;
+  const dnum = Math.floor(days);
+  const ascll = [
+    `欢迎来到My Blog!`,
+    `生活明朗, 万物可爱`,
+    `
+    ████████╗ █████╗ ██╗  ██╗ █████╗ ██╗  ██╗███████╗
+    ╚══██╔══╝██╔══██╗██║ ██╔╝██╔══██╗██║ ██╔╝██╔════╝
+       ██║   ███████║█████╔╝ ███████║█████╔╝ █████╗  
+       ██║   ██╔══██║██╔═██╗ ██╔══██║██╔═██╗ ██╔══╝  
+       ██║   ██║  ██║██║  ██╗██║  ██║██║  ██╗███████╗
+       ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝
+        `,
+    "已上线",
+    dnum,
+    "天",
+    "©2022 By Takake V1.6.12",
+  ];
+  const ascll2 = [`NCC2-036`, `调用前置摄像头拍照成功，识别为【骇客】.`, `Photo captured: `, `🤪`];
+
+  setTimeout(
+    Log.bind(
+      console,
+      `\n%c${ascll[0]} %c ${ascll[1]} %c ${ascll[2]} %c${ascll[3]}%c ${ascll[4]}%c ${ascll[5]}\n\n%c ${ascll[6]}\n`,
+      "color:#425AEF",
+      "",
+      "color:#425AEF",
+      "color:#425AEF",
+      "",
+      "color:#425AEF",
+      ""
+    )
+  );
+  setTimeout(
+    Log.bind(
+      console,
+      `%c ${ascll2[0]} %c ${ascll2[1]} %c \n${ascll2[2]} %c\n${ascll2[3]}\n`,
+      "color:white; background-color:#4fd953",
+      "",
+      "",
+      'background:url("https://npm.elemecdn.com/anzhiyu-blog@1.1.6/img/post/common/tinggge.gif") no-repeat;font-size:450%'
+    )
+  );
+
+  setTimeout(Log.bind(console, "%c WELCOME %c 你好，小笨蛋.", "color:white; background-color:#4f90d9", ""));
+
+  setTimeout(
+    console.warn.bind(
+      console,
+      "%c ⚡ Powered by 安知鱼 %c 你正在访问 Takake 的博客.",
+      "color:white; background-color:#f0ad4e",
+      ""
+    )
+  );
+
+  setTimeout(Log.bind(console, "%c W23-12 %c 你已打开控制台.", "color:white; background-color:#4f90d9", ""));
+
+  setTimeout(
+    console.warn.bind(console, "%c S013-782 %c 你现在正处于监控中.", "color:white; background-color:#d9534f", "")
+  );
+});</script><script async src="/anzhiyu/random.js"></script><script async="async">(function () {
+  var grt = new Date("12/01/2023 00:00:00"); //设置网站上线时间
+  var now = new Date();
+  var dnum;
+  var hnum;
+  var mnum;
+  var snum;
+  var nowHour;
+
+  // 计算并更新天数、小时数、分钟数和秒数
+  function updateTime() {
+    now = new Date(); // 更新 now 的值
+    nowHour = now.getHours(); // 更新 nowHour 的值
+    var days = (now - grt) / 1000 / 60 / 60 / 24;
+    dnum = Math.floor(days);
+    var hours = (now - grt) / 1000 / 60 / 60 - 24 * dnum;
+    hnum = Math.floor(hours);
+    if (String(hnum).length == 1) {
+      hnum = "0" + hnum;
+    }
+    var minutes = (now - grt) / 1000 / 60 - 24 * 60 * dnum - 60 * hnum;
+    mnum = Math.floor(minutes);
+    if (String(mnum).length == 1) {
+      mnum = "0" + mnum;
+    }
+    var seconds = (now - grt) / 1000 - 24 * 60 * 60 * dnum - 60 * 60 * hnum - 60 * mnum;
+    snum = Math.round(seconds);
+    if (String(snum).length == 1) {
+      snum = "0" + snum;
+    }
+  }
+
+  // 更新网页中显示的网站运行时间
+  function updateHtml() {
+    const footer = document.getElementById("footer");
+    if (!footer) return
+    let currentTimeHtml = "";
+    if (nowHour < 18 && nowHour >= 9) {
+      // 如果是上班时间，默认就是"安知鱼-上班摸鱼中.svg"图片，不需要更改
+      currentTimeHtml = `本站居然运行了 ${dnum} 天<span id='runtime'> ${hnum} 小时 ${mnum} 分 ${snum} 秒 </span><i class='anzhiyufont anzhiyu-icon-heartbeat' style='color:red'></i>`;
+    } else {
+      // 如果是下班时间，插入"安知鱼-下班啦.svg"图片
+      let img = document.querySelector("#workboard .workSituationImg");
+      if (img != null) {
+        img.src = "https://hongkong-img.oss-cn-hongkong.aliyuncs.com/blog-web-img/184064228.png";
+        img.title = "下班玩人工智能，嘿嘿~";
+        img.alt = "下班玩人工智能，嘿嘿~";
+      }
+
+      currentTimeHtml = `本站居然运行了 ${dnum} 天<span id='runtime'> ${hnum} 小时 ${mnum} 分 ${snum} 秒 </span><i class='anzhiyufont anzhiyu-icon-heartbeat' style='color:red'></i>`;
+    }
+
+    if (document.getElementById("runtimeTextTip")) {
+      document.getElementById("runtimeTextTip").innerHTML = currentTimeHtml;
+    }
+  }
+
+  setInterval(() => {
+    updateTime();
+    updateHtml();
+  }, 1000);
+})();</script><script src="https://cdn.cbd.int/algoliasearch@4.18.0/dist/algoliasearch-lite.umd.js"></script><script src="https://cdn.cbd.int/instantsearch.js@4.60.0/dist/instantsearch.production.min.js"></script><script src="/js/search/algolia.js"></script><div class="js-pjax"><script>(() => {
+  const init = () => {
+    twikoo.init(Object.assign({
+      el: '#twikoo-wrap',
+      envId: 'https://takake.netlify.app/.netlify/functions/twikoo',
+      region: '',
+      onCommentLoaded: () => {
+        anzhiyu.loadLightbox(document.querySelectorAll('#twikoo .tk-content img:not(.tk-owo-emotion)'))
+      }
+    }, null))
+  }
+
+  const loadTwikoo = () => {
+    if (typeof twikoo === 'object') setTimeout(runFn,0)
+    else getScript('https://cdn.cbd.int/twikoo@1.6.25/dist/twikoo.all.min.js').then(runFn)
+  }
+
+  const getCount = () => {
+    const countELement = document.getElementById('twikoo-count')
+    if(!countELement) return
+    twikoo.getCommentsCount({
+      envId: 'https://takake.netlify.app/.netlify/functions/twikoo',
+      region: '',
+      urls: [window.location.pathname],
+      includeReply: false
+    }).then(res => {
+      countELement.textContent = res[0].count
+    }).catch(err => {
+      console.error(err)
+    })
+  }
+
+  const runFn = () => {
+    init();
+    
+  }
+
+  if ('Twikoo' === 'Twikoo' || !false) {
+    if (false) anzhiyu.loadComment(document.getElementById('twikoo-wrap'), loadTwikoo)
+    else {
+      loadTwikoo()
+    }
+  } else {
+    window.loadOtherComment = loadTwikoo
+  }
+})()</script><input type="hidden" name="page-type" id="page-type" value="post"></div><script>window.addEventListener('load', () => {
+  const changeContent = (content) => {
+    if (content === '') return content
+
+    content = content.replace(/<img.*?src="(.*?)"?[^\>]+>/ig, '[图片]') // replace image link
+    content = content.replace(/<a[^>]+?href=["']?([^"']+)["']?[^>]*>([^<]+)<\/a>/gi, '[链接]') // replace url
+    content = content.replace(/<pre><code>.*?<\/pre>/gi, '[代码]') // replace code
+    content = content.replace(/<[^>]+>/g,"") // remove html tag
+
+    if (content.length > 150) {
+      content = content.substring(0,150) + '...'
+    }
+    return content
+  }
+
+  const getComment = () => {
+    const runTwikoo = () => {
+      twikoo.getRecentComments({
+        envId: 'https://takake.netlify.app/.netlify/functions/twikoo',
+        region: '',
+        pageSize: 6,
+        includeReply: true
+      }).then(function (res) {
+        const twikooArray = res.map(e => {
+          return {
+            'content': changeContent(e.comment),
+            'avatar': e.avatar,
+            'nick': e.nick,
+            'url': e.url + '#' + e.id,
+            'date': new Date(e.created).toISOString()
+          }
+        })
+
+        saveToLocal.set('twikoo-newest-comments', JSON.stringify(twikooArray), 10/(60*24))
+        generateHtml(twikooArray)
+      }).catch(function (err) {
+        const $dom = document.querySelector('#card-newest-comments .aside-list')
+        $dom.textContent= "无法获取评论，请确认相关配置是否正确"
+      })
+    }
+
+    if (typeof twikoo === 'object') {
+      runTwikoo()
+    } else {
+      getScript('https://cdn.cbd.int/twikoo@1.6.25/dist/twikoo.all.min.js').then(runTwikoo)
+    }
+  }
+
+  const generateHtml = array => {
+    let result = ''
+
+    if (array.length) {
+      for (let i = 0; i < array.length; i++) {
+        result += '<div class=\'aside-list-item\'>'
+
+        if (true) {
+          const name = 'data-lazy-src'
+          result += `<a href='${array[i].url}' class='thumbnail'><img ${name}='${array[i].avatar}' alt='${array[i].nick}'><div class='name'><span>${array[i].nick} </span></div></a>`
+        }
+        
+        result += `<div class='content'>
+        <a class='comment' href='${array[i].url}' title='${array[i].content}'>${array[i].content}</a>
+        <time datetime="${array[i].date}">${anzhiyu.diffDate(array[i].date, true)}</time></div>
+        </div>`
+      }
+    } else {
+      result += '没有评论'
+    }
+
+    let $dom = document.querySelector('#card-newest-comments .aside-list')
+    $dom && ($dom.innerHTML= result)
+    window.lazyLoadInstance && window.lazyLoadInstance.update()
+    window.pjax && window.pjax.refresh($dom)
+  }
+
+  const newestCommentInit = () => {
+    if (document.querySelector('#card-newest-comments .aside-list')) {
+      const data = saveToLocal.get('twikoo-newest-comments')
+      if (data) {
+        generateHtml(JSON.parse(data))
+      } else {
+        getComment()
+      }
+    }
+  }
+
+  newestCommentInit()
+  document.addEventListener('pjax:complete', newestCommentInit)
+})</script><script>var visitorMail = "vister@takake.com";
+</script><script async data-pjax src="https://cdn.cbd.int/anzhiyu-theme-static@1.0.0/waterfall/waterfall.js"></script><script src="https://lf3-cdn-tos.bytecdntp.com/cdn/expire-1-M/qrcodejs/1.0.0/qrcode.min.js"></script><script src="/js/anzhiyu/right_click_menu.js"></script><link rel="stylesheet" href="https://cdn.cbd.int/anzhiyu-theme-static@1.1.9/icon/ali_iconfont_css.css"><script>(() => {
+  const isChatBtn = false
+  const isChatHideShow = false
+
+  if (isChatBtn) {
+    const close = () => {
+      Chatra('minimizeWidget')
+      Chatra('hide')
+    }
+
+    const open = () => {
+      Chatra('openChat', true)
+      Chatra('show')
+    }
+
+    window.ChatraSetup = {
+      startHidden: true
+    }
+  
+    window.chatBtnFn = () => {
+      const isShow = document.getElementById('chatra').classList.contains('chatra--expanded')
+      isShow ? close() : open()
+    }
+  } else if (isChatHideShow) {
+    window.chatBtn = {
+      hide: () => {
+        Chatra('hide')
+      },
+      show: () => {
+        Chatra('show')
+      }
+    }
+  }
+
+  (function(d, w, c) {
+    w.ChatraID = 'MYtmap9meYHQGdDTJ'
+    var s = d.createElement('script')
+    w[c] = w[c] || function() {
+        (w[c].q = w[c].q || []).push(arguments)
+    }
+    s.async = true
+    s.src = 'https://call.chatra.io/chatra.js'
+    if (d.head) d.head.appendChild(s)
+  })(document, window, 'Chatra')
+
+})()</script><link rel="stylesheet" href="https://cdn.cbd.int/anzhiyu-theme-static@1.0.0/aplayer/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.cbd.int/anzhiyu-blog-static@1.0.1/js/APlayer.min.js"></script><script src="https://cdn.cbd.int/hexo-anzhiyu-music@1.0.1/assets/js/Meting2.min.js"></script><script src="https://cdn.cbd.int/pjax@0.2.8/pjax.min.js"></script><script>let pjaxSelectors = ["meta[property=\"og:image\"]","meta[property=\"og:title\"]","meta[property=\"og:url\"]","meta[property=\"og:type\"]","meta[property=\"og:site_name\"]","meta[property=\"og:description\"]","head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+var pjax = new Pjax({
+  elements: 'a:not([target="_blank"])',
+  selectors: pjaxSelectors,
+  cacheBust: false,
+  analytics: false,
+  scrollRestoration: false
+})
+
+document.addEventListener('pjax:send', function () {
+  // removeEventListener scroll 
+  anzhiyu.removeGlobalFnEvent('pjax')
+  anzhiyu.removeGlobalFnEvent('themeChange')
+
+  document.getElementById('rightside').classList.remove('rightside-show')
+  
+  if (window.aplayers) {
+    for (let i = 0; i < window.aplayers.length; i++) {
+      if (!window.aplayers[i].options.fixed) {
+        window.aplayers[i].destroy()
+      }
+    }
+  }
+
+  typeof typed === 'object' && typed.destroy()
+
+  //reset readmode
+  const $bodyClassList = document.body.classList
+  $bodyClassList.contains('read-mode') && $bodyClassList.remove('read-mode')
+})
+
+document.addEventListener('pjax:complete', function () {
+  window.refreshFn()
+
+  document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+  })
+
+  GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+  typeof panguInit === 'function' && panguInit()
+
+  // google analytics
+  typeof gtag === 'function' && gtag('config', '', {'page_path': window.location.pathname});
+
+  // baidu analytics
+  typeof _hmt === 'object' && _hmt.push(['_trackPageview',window.location.pathname]);
+
+  typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+
+  // prismjs
+  typeof Prism === 'object' && Prism.highlightAll()
+})
+
+document.addEventListener('pjax:error', e => {
+  if (e.request.status === 404) {
+    pjax.loadUrl('/404.html')
+  }
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><div id="popup-window"><div class="popup-window-title">通知</div><div class="popup-window-divider"></div><div class="popup-window-content"><div class="popup-tip">你好呀</div><div class="popup-link"><i class="anzhiyufont anzhiyu-icon-arrow-circle-right"></i></div></div></div></body></html>
